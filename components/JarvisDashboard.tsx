@@ -1,383 +1,424 @@
-import HudPanel from "@/components/HudPanel";
-import NeonButton from "@/components/NeonButton";
-import StatusPill from "@/components/StatusPill";
+import Link from "next/link";
 
 const systemRows = [
-  ["Communications", "Online"],
-  ["Satellites", "Online"],
-  ["Database", "Online"],
-  ["Server Nodes", "Online"],
-  ["AI Subsystems", "Online"],
-  ["Security Grid", "Online"],
-  ["Power Grid", "Stable"],
-  ["Network Status", "Secure"]
+  ["COMMUNICATIONS", "ONLINE"],
+  ["SATELLITES", "ONLINE"],
+  ["DATABASE", "ONLINE"],
+  ["SERVER NODES", "ONLINE"],
+  ["AI SUBSYSTEMS", "ONLINE"],
+  ["SECURITY GRID", "ONLINE"],
+  ["POWER GRID", "STABLE"],
+  ["NETWORK STATUS", "SECURE"],
 ];
 
 const logs = [
-  "System boot sequence completed",
-  "AI core synchronization successful",
-  "Network security protocols active",
-  "Satellite uplink established",
-  "Database integrity verified",
-  "All systems operational"
+  ["10:42:11", "System boot sequence completed"],
+  ["10:42:15", "AI core synchronization successful"],
+  ["10:42:18", "Network security protocols active"],
+  ["10:42:21", "Satellite uplink established"],
+  ["10:42:24", "Database integrity verified"],
+  ["10:42:28", "All systems operational"],
+  ["10:42:32", "Continuous monitoring active"],
 ];
 
-const tasks = [
-  "Fix mobile hamburger menu",
-  "Update visit section image",
-  "Add San Juan vape SEO",
-  "Normalize brand carousel logos"
+const quickActions = [
+  "COMMAND CONSOLE",
+  "FILE BROWSER",
+  "SYSTEM SETTINGS",
+  "SECURITY CENTER",
+  "AI TRAINING MODE",
+  "DIAGNOSTIC TOOLS",
+  "CUSTOMIZE DASHBOARD",
 ];
 
-const progress = [
-  ["Frontend UI", "78%"],
-  ["Supabase Setup", "42%"],
-  ["AI Actions", "18%"],
-  ["Deployment", "25%"]
-];
-
-function MiniMeter({ label, value }: { label: string; value: string }) {
+function Panel({
+  title,
+  children,
+  className = "",
+}: {
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-full border border-cyan-400/35 bg-black/30 p-4 shadow-[inset_0_0_18px_rgba(0,217,255,0.08),0_0_16px_rgba(0,217,255,0.06)]">
-      <p className="text-2xl font-light text-cyan-50">{value}</p>
-      <p className="mt-1 text-[9px] uppercase tracking-[0.2em] text-cyan-300/70">
-        {label}
-      </p>
+    <section className={`jarvis-panel ${className}`}>
+      {title && (
+        <div className="jarvis-panel-title">
+          <span>{title}</span>
+        </div>
+      )}
+      <div className="relative z-10">{children}</div>
+    </section>
+  );
+}
+
+function StatusBox({
+  icon,
+  label,
+  value,
+}: {
+  icon: string;
+  label: string;
+  value?: string;
+}) {
+  return (
+    <div className="status-box">
+      <span className="status-icon">{icon}</span>
+      <span>{label}</span>
+      {value && <strong>{value}</strong>}
     </div>
   );
 }
 
-function WaveRow({ label, value }: { label: string; value: string }) {
+function RoundMeter({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+}) {
   return (
-    <div className="grid grid-cols-[120px_1fr_72px] items-center gap-3">
-      <p className="text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-        {label}
-      </p>
-      <div className="h-8 data-wave opacity-90" />
-      <p className="text-right text-[10px] font-bold text-cyan-300">{value}</p>
+    <div className="round-meter">
+      <div className="round-meter-ring" />
+      <div className="round-meter-inner">
+        <strong>{value}</strong>
+        <span>{sub}</span>
+      </div>
+      <p>{label}</p>
+    </div>
+  );
+}
+
+function BarRow({
+  label,
+  value,
+  width,
+}: {
+  label: string;
+  value: string;
+  width: string;
+}) {
+  return (
+    <div className="bar-row">
+      <span>{label}</span>
+      <div className="bar-track">
+        <div className="bar-fill" style={{ width }} />
+      </div>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function DataWave({
+  label,
+  value,
+  variant = 1,
+}: {
+  label: string;
+  value: string;
+  variant?: number;
+}) {
+  return (
+    <div className="data-wave-row">
+      <span>{label}</span>
+      <svg viewBox="0 0 280 44" preserveAspectRatio="none">
+        <polyline
+          points={
+            variant === 1
+              ? "0,24 10,22 20,26 30,16 40,28 50,24 60,20 70,22 80,18 90,26 100,25 110,13 120,30 130,22 140,18 150,24 160,27 170,19 180,16 190,25 200,29 210,18 220,22 230,16 240,27 250,21 260,22 270,18 280,25"
+              : variant === 2
+                ? "0,28 10,25 20,27 30,20 40,18 50,31 60,24 70,14 80,28 90,21 100,19 110,30 120,18 130,12 140,27 150,32 160,20 170,22 180,15 190,30 200,24 210,18 220,28 230,14 240,20 250,31 260,22 270,19 280,24"
+                : "0,20 10,22 20,18 30,30 40,24 50,19 60,26 70,28 80,16 90,20 100,24 110,21 120,29 130,15 140,23 150,26 160,22 170,19 180,31 190,24 200,20 210,26 220,18 230,22 240,28 250,16 260,25 270,21 280,24"
+          }
+        />
+      </svg>
+      <strong>{value}</strong>
     </div>
   );
 }
 
 export default function JarvisDashboard() {
   return (
-    <main className="hud-bg relative min-h-screen overflow-hidden p-3 text-cyan-100">
-      <div className="absolute inset-0 hud-grid opacity-40" />
-      <div className="absolute inset-0 scanlines opacity-20" />
-      <div className="absolute inset-0 vignette" />
+    <main className="jarvis-dashboard">
+      <div className="dashboard-grid-bg" />
+      <div className="dashboard-vignette" />
+      <div className="scanline-layer" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1920px] flex-col gap-3">
-        <header className="hud-panel px-5 py-3">
-          <div className="grid items-center gap-4 xl:grid-cols-[1fr_520px_1fr]">
-            <div className="flex flex-wrap gap-3">
-              <StatusPill label="System" value="Online" icon="◴" />
-              <StatusPill label="Network" value="Secure" icon="◈" />
-              <StatusPill label="AI Core" value="Active" icon="◎" />
-            </div>
+      <div className="dashboard-shell">
+        <header className="dashboard-header">
+          <div className="header-left">
+            <StatusBox icon="◴" label="SYSTEM" value="ONLINE" />
+            <StatusBox icon="◈" label="NETWORK" value="SECURE" />
+            <StatusBox icon="◎" label="AI CORE" value="ACTIVE" />
+          </div>
 
-            <div className="relative text-center">
-              <div className="thin-line absolute left-0 top-1/2 hidden w-20 xl:block" />
-              <div className="thin-line absolute right-0 top-1/2 hidden w-20 xl:block" />
-              <h1 className="text-4xl font-black uppercase tracking-[0.34em] text-cyan-300 drop-shadow-[0_0_18px_rgba(0,217,255,0.75)] md:text-5xl">
-                JARVIS
-              </h1>
-              <p className="text-xs uppercase tracking-[0.34em] text-cyan-50/75">
-                AI System Control Center
-              </p>
+          <div className="header-title">
+            <div className="header-line left" />
+            <div>
+              <h1>JARVIS</h1>
+              <p>AI SYSTEM CONTROL CENTER</p>
             </div>
+            <div className="header-line right" />
+          </div>
 
-            <div className="flex flex-wrap justify-end gap-3 text-[10px] uppercase tracking-[0.16em] text-cyan-200/80">
-              <StatusPill label="10:42:36 AM" icon="◷" />
-              <StatusPill label="Sat, May 24, 2025" icon="◫" />
-              <StatusPill label="Uptime" value="128:47:12" icon="□" />
-            </div>
+          <div className="header-right">
+            <StatusBox icon="◷" label="10:42:36 AM" />
+            <StatusBox icon="▣" label="SAT, MAY 24, 2025" />
+            <StatusBox icon="□" label="UPTIME" value="128:47:12" />
           </div>
         </header>
 
-        <nav className="mx-auto flex w-full max-w-2xl justify-center">
-          {["Overview", "Systems", "Network", "Diagnostics", "Utilities"].map(
-            (item) => (
-              <button
-                key={item}
-                className={`border border-cyan-400/25 px-8 py-3 text-[11px] font-bold uppercase tracking-[0.18em] ${
-                  item === "Overview"
-                    ? "bg-cyan-400/15 text-cyan-200"
-                    : "bg-black/25 text-cyan-100/70"
-                }`}
-              >
+        <nav className="dashboard-tabs">
+          {["OVERVIEW", "SYSTEMS", "NETWORK", "DIAGNOSTICS", "UTILITIES"].map(
+            (item, index) => (
+              <button key={item} className={index === 0 ? "active" : ""}>
                 {item}
               </button>
             )
           )}
         </nav>
 
-        <section className="grid flex-1 grid-cols-1 gap-3 xl:grid-cols-[520px_1fr_520px]">
-          <div className="grid gap-3">
-            <HudPanel title="Global Systems">
-              <div className="grid grid-cols-[190px_1fr] gap-5">
-                <div className="relative flex aspect-square items-center justify-center rounded-full border border-cyan-400/25 bg-cyan-950/10 shadow-[0_0_35px_rgba(0,217,255,0.12)]">
-                  <div className="absolute inset-5 rounded-full border border-cyan-400/25" />
-                  <div className="absolute inset-10 rounded-full border border-cyan-400/15" />
-                  <div className="text-center">
-                    <p className="text-5xl">◉</p>
-                    <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-cyan-300">
-                      Earth Grid
-                    </p>
+        <section className="dashboard-main">
+          <div className="left-column">
+            <Panel title="GLOBAL SYSTEMS" className="global-panel">
+              <div className="global-content">
+                <div className="earth-orb">
+                  <div className="earth-ring r1" />
+                  <div className="earth-ring r2" />
+                  <div className="earth-ring r3" />
+                  <div className="earth-globe">
+                    <div className="earth-lat lat1" />
+                    <div className="earth-lat lat2" />
+                    <div className="earth-lat lat3" />
+                    <div className="earth-long lon1" />
+                    <div className="earth-long lon2" />
+                    <span>◉</span>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="system-list">
                   {systemRows.map(([name, state]) => (
-                    <div
-                      key={name}
-                      className="grid grid-cols-[18px_1fr_70px] items-center gap-2 text-[10px] uppercase tracking-[0.13em]"
-                    >
-                      <span className="text-cyan-300">◉</span>
-                      <span className="text-cyan-100/70">{name}</span>
-                      <span className="text-right text-emerald-300">
-                        {state}
-                      </span>
+                    <div key={name} className="system-row">
+                      <i />
+                      <span>{name}</span>
+                      <strong>{state}</strong>
                     </div>
                   ))}
                 </div>
               </div>
-            </HudPanel>
+            </Panel>
 
-            <HudPanel title="Network Overview">
-              <div className="relative h-52 overflow-hidden border border-cyan-400/10 bg-black/25">
-                <div className="absolute inset-0 hud-grid opacity-35" />
-                <div className="absolute left-[8%] top-[42%] h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(0,217,255,1)]" />
-                <div className="absolute left-[28%] top-[35%] h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(0,217,255,1)]" />
-                <div className="absolute left-[50%] top-[48%] h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(0,217,255,1)]" />
-                <div className="absolute left-[70%] top-[30%] h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(0,217,255,1)]" />
-                <div className="absolute left-[86%] top-[55%] h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(0,217,255,1)]" />
-                <svg className="absolute inset-0 h-full w-full opacity-80">
-                  <path d="M45 92 C180 0 280 160 420 82" stroke="#00d9ff" strokeWidth="1" fill="none" />
-                  <path d="M140 72 C210 180 315 10 455 115" stroke="#00d9ff" strokeWidth="1" fill="none" />
-                  <path d="M250 108 C310 30 385 65 500 60" stroke="#00d9ff" strokeWidth="1" fill="none" />
+            <Panel title="NETWORK OVERVIEW" className="network-panel">
+              <div className="map-box">
+                <div className="map-grid" />
+                <svg viewBox="0 0 460 170" preserveAspectRatio="none">
+                  <path d="M20 95 C95 25 160 140 235 70 C300 12 360 75 440 32" />
+                  <path d="M55 112 C150 45 230 155 305 82 C355 35 410 92 452 70" />
+                  <path d="M75 62 C150 30 245 45 330 110 C380 150 420 95 455 125" />
+                  <circle cx="20" cy="95" r="4" />
+                  <circle cx="235" cy="70" r="4" />
+                  <circle cx="305" cy="82" r="4" />
+                  <circle cx="440" cy="32" r="4" />
+                  <circle cx="452" cy="70" r="4" />
                 </svg>
               </div>
 
-              <div className="mt-3 grid grid-cols-4 border border-cyan-400/15 bg-black/25 text-center">
-                {[
-                  ["Active Connections", "1,842"],
-                  ["Secure Nodes", "256"],
-                  ["Data Packets / Sec", "9.47M"],
-                  ["Threat Level", "Low"]
-                ].map(([label, value]) => (
-                  <div key={label} className="border-r border-cyan-400/10 p-3 last:border-r-0">
-                    <p className="text-[8px] uppercase tracking-[0.12em] text-cyan-100/50">
-                      {label}
-                    </p>
-                    <p className="mt-1 text-lg text-cyan-300">{value}</p>
-                  </div>
-                ))}
+              <div className="network-stats">
+                <div>
+                  <span>ACTIVE CONNECTIONS</span>
+                  <strong>1,842</strong>
+                </div>
+                <div>
+                  <span>SECURE NODES</span>
+                  <strong>256</strong>
+                </div>
+                <div>
+                  <span>DATA PACKETS / SEC</span>
+                  <strong>9.47M</strong>
+                </div>
+                <div>
+                  <span>THREAT LEVEL</span>
+                  <strong>LOW</strong>
+                </div>
               </div>
-            </HudPanel>
+            </Panel>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <HudPanel title="System Logs">
-                <div className="space-y-3">
-                  {logs.map((log, index) => (
-                    <div
-                      key={log}
-                      className="grid grid-cols-[50px_1fr] gap-2 text-[9px] text-cyan-100/65"
-                    >
-                      <span className="text-cyan-300">10:42:{11 + index * 4}</span>
-                      <span>{log}</span>
+            <div className="left-bottom-grid">
+              <Panel title="SYSTEM LOGS">
+                <div className="log-list">
+                  {logs.map(([time, log]) => (
+                    <div key={time + log}>
+                      <span>{time}</span>
+                      <p>{log}</p>
                     </div>
                   ))}
                 </div>
-                <NeonButton variant="ghost" className="mt-4 w-full py-2">
-                  View Full Logs
-                </NeonButton>
-              </HudPanel>
+                <button className="small-hud-button">VIEW FULL LOGS</button>
+              </Panel>
 
-              <HudPanel title="AI Capabilities">
-                <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
-                  <div className="absolute inset-0 core-ring-2 rounded-full animate-spin-slow" />
-                  <div className="absolute inset-8 rounded-full border border-cyan-400/30" />
-                  <div className="h-12 w-12 rounded-full bg-cyan-300/30 shadow-[0_0_45px_rgba(0,217,255,0.9)]" />
+              <Panel title="AI CAPABILITIES">
+                <div className="capabilities-grid">
+                  <div className="capability-text left">
+                    <p>NATURAL LANGUAGE <strong>100%</strong></p>
+                    <p>PATTERN RECOGNITION <strong>98%</strong></p>
+                    <p>PREDICTIVE ANALYTICS <strong>97%</strong></p>
+                  </div>
+
+                  <div className="radar-core">
+                    <div className="radar-shape" />
+                    <div className="radar-dot" />
+                  </div>
+
+                  <div className="capability-text right">
+                    <p>MACHINE LEARNING <strong>100%</strong></p>
+                    <p>DECISION ENGINE <strong>99%</strong></p>
+                    <p>ADAPTIVE SYSTEMS <strong>96%</strong></p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[9px] uppercase tracking-[0.13em]">
-                  {["Natural Language 100%", "Pattern Recognition 98%", "Machine Learning 100%", "Decision Engine 99%"].map(
-                    (item) => (
-                      <p key={item} className="text-cyan-100/70">
-                        {item}
-                      </p>
-                    )
-                  )}
-                </div>
-              </HudPanel>
+              </Panel>
             </div>
           </div>
 
-          <div className="grid gap-3">
-            <HudPanel className="flex min-h-[620px] items-center justify-center">
-              <div className="relative flex h-[610px] w-[610px] max-w-full items-center justify-center">
-                <div className="absolute inset-0 rounded-full core-ring-1 opacity-80 animate-spin-slow" />
-                <div className="absolute inset-12 rounded-full core-ring-2 opacity-90 animate-spin-reverse" />
-                <div className="absolute inset-24 rounded-full border border-cyan-400/30 shadow-[inset_0_0_45px_rgba(0,217,255,0.12)]" />
-                <div className="absolute inset-36 rounded-full border border-cyan-400/50" />
-                <div className="absolute inset-48 rounded-full bg-cyan-300/10 shadow-[0_0_85px_rgba(0,217,255,0.75)]" />
-                <div className="absolute h-36 w-36 rounded-full border border-cyan-300/50 bg-cyan-300/20 shadow-[0_0_80px_rgba(0,217,255,0.95)] animate-pulse-glow" />
+          <div className="center-column">
+            <Panel className="core-panel">
+              <div className="core-wrap">
+                <div className="core-ring ring-a" />
+                <div className="core-ring ring-b" />
+                <div className="core-ring ring-c" />
+                <div className="core-ring ring-d" />
+                <div className="core-ring ring-e" />
 
-                <div className="absolute left-6 top-1/2 text-4xl text-cyan-300">▶</div>
-                <div className="absolute right-6 top-1/2 text-4xl text-cyan-300">◀</div>
-                <div className="absolute top-8 text-4xl text-cyan-100">▼</div>
+                <div className="core-ticks ticks-a" />
+                <div className="core-ticks ticks-b" />
 
-                <div className="relative z-10 text-center">
-                  <h2 className="text-5xl font-light uppercase tracking-[0.22em] text-cyan-50">
-                    JARVIS
-                  </h2>
-                  <p className="mt-2 text-xs uppercase tracking-[0.3em] text-cyan-300/75">
-                    AI Core
-                  </p>
-                  <p className="mt-8 text-[10px] uppercase tracking-[0.2em] text-cyan-100/60">
-                    System Status
-                  </p>
-                  <p className="text-xl font-bold uppercase tracking-[0.18em] text-emerald-300">
-                    Optimal
-                  </p>
-                  <div className="mx-auto mt-3 w-20 rounded-full border border-cyan-300/50 py-1 text-xs text-cyan-100">
-                    100%
+                <div className="core-side-marker left">▶</div>
+                <div className="core-side-marker right">◀</div>
+                <div className="core-top-marker">▼</div>
+
+                <div className="core-center">
+                  <div className="core-polygon">
+                    <div className="polygon-lines" />
+                    <div className="core-light" />
                   </div>
+
+                  <h2>JARVIS</h2>
+                  <p>AI CORE</p>
+                  <span>SYSTEM STATUS</span>
+                  <strong>OPTIMAL</strong>
+                  <em>100%</em>
                 </div>
               </div>
-            </HudPanel>
+            </Panel>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <HudPanel title="Real-Time Analytics">
-                <div className="h-36 data-wave" />
-              </HudPanel>
-
-              <HudPanel title="AI Confidence">
-                <p className="text-center text-4xl font-light text-cyan-200">
-                  99.7%
-                </p>
-                <div className="mt-4 h-2 bg-cyan-950">
-                  <div className="h-2 w-[99%] bg-cyan-300 shadow-[0_0_15px_rgba(0,217,255,0.9)]" />
-                </div>
-              </HudPanel>
-
-              <HudPanel title="Response Time">
-                <p className="text-center text-4xl font-light text-cyan-200">
-                  0.003s
-                </p>
-                <div className="mt-4 h-2 bg-cyan-950">
-                  <div className="h-2 w-[87%] bg-cyan-300 shadow-[0_0_15px_rgba(0,217,255,0.9)]" />
-                </div>
-              </HudPanel>
-            </div>
-          </div>
-
-          <div className="grid gap-3">
-            <HudPanel title="System Diagnostics">
-              <div className="grid grid-cols-4 gap-4">
-                <MiniMeter label="CPU" value="82%" />
-                <MiniMeter label="Memory" value="73%" />
-                <MiniMeter label="GPU" value="91%" />
-                <MiniMeter label="Storage" value="67%" />
-              </div>
-
-              <div className="mt-5 space-y-3">
-                {[
-                  ["Core Temperature", "58°C"],
-                  ["Fan Speed", "1420 RPM"],
-                  ["Voltage", "1.26 V"],
-                  ["System Health", "Optimal"]
-                ].map(([label, value], index) => (
-                  <div
-                    key={label}
-                    className="grid grid-cols-[140px_1fr_80px] items-center gap-3 text-[10px] uppercase tracking-[0.13em]"
-                  >
-                    <span className="text-cyan-100/65">{label}</span>
-                    <div className="h-2 bg-cyan-950">
-                      <div
-                        className="h-2 bg-cyan-300"
-                        style={{ width: `${70 + index * 6}%` }}
-                      />
-                    </div>
-                    <span className="text-right text-cyan-300">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </HudPanel>
-
-            <HudPanel title="Data Stream Monitor">
-              <div className="space-y-4">
-                <WaveRow label="Data Intake" value="9.47 GB/s" />
-                <WaveRow label="Data Processing" value="7.23 GB/s" />
-                <WaveRow label="Data Output" value="6.31 GB/s" />
-                <WaveRow label="AI Learning Feed" value="3.92 GB/s" />
-              </div>
-            </HudPanel>
-
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_260px]">
-              <HudPanel title="Power Management">
-                <div className="grid grid-cols-[150px_1fr] gap-5">
-                  <div className="relative flex aspect-square items-center justify-center rounded-full border border-cyan-400/35">
-                    <div className="absolute inset-5 rounded-full border-8 border-cyan-400/25" />
-                    <p className="text-center text-4xl text-cyan-200">
-                      94%
-                      <span className="block text-[10px] uppercase tracking-[0.2em]">
-                        Efficiency
-                      </span>
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      ["Reserve Power", "82%"],
-                      ["Battery Level", "76%"],
-                      ["Grid Stability", "91%"],
-                      ["Power Flow", "Optimal"]
-                    ].map(([label, value]) => (
-                      <div key={label}>
-                        <div className="mb-1 flex justify-between text-[10px] uppercase tracking-[0.14em]">
-                          <span className="text-cyan-100/60">{label}</span>
-                          <span className="text-cyan-300">{value}</span>
-                        </div>
-                        <div className="h-2 bg-cyan-950">
-                          <div className="h-2 w-[82%] bg-cyan-300" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </HudPanel>
-
-              <HudPanel title="Quick Access">
-                <div className="grid gap-2">
+            <div className="center-bottom">
+              <Panel title="SYSTEM SEQUENCE">
+                <div className="sequence-list">
                   {[
-                    "Command Console",
-                    "File Browser",
-                    "System Settings",
-                    "Security Center",
-                    "AI Training Mode",
-                    "Diagnostic Tools",
-                    "Customize Dashboard"
-                  ].map((item) => (
-                    <button
-                      key={item}
-                      className="flex items-center justify-between border border-cyan-400/15 bg-black/25 px-3 py-2 text-[10px] uppercase tracking-[0.13em] text-cyan-100/75 hover:border-cyan-300 hover:text-cyan-200"
-                    >
+                    ["SYSTEM INIT", "00:00:00"],
+                    ["NETWORK SYNC", "00:00:02"],
+                    ["DATA LOAD", "00:00:05"],
+                    ["AI CORE READY", "00:00:07"],
+                    ["SYSTEM OPTIMAL", "00:00:10"],
+                  ].map(([name, time]) => (
+                    <div key={name}>
+                      <i />
+                      <span>{name}</span>
+                      <strong>{time}</strong>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+
+              <Panel title="REAL-TIME ANALYTICS">
+                <div className="analytics-bars">
+                  {Array.from({ length: 56 }).map((_, index) => (
+                    <i
+                      key={index}
+                      style={{
+                        height: `${18 + ((index * 17) % 84)}%`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </Panel>
+
+              <Panel title="AI CONFIDENCE">
+                <div className="big-stat">99.7%</div>
+                <div className="stat-line">
+                  <i style={{ width: "99%" }} />
+                </div>
+              </Panel>
+            </div>
+          </div>
+
+          <div className="right-column">
+            <Panel title="SYSTEM DIAGNOSTICS">
+              <div className="meter-grid">
+                <RoundMeter label="CPU" value="82%" sub="LOAD" />
+                <RoundMeter label="MEMORY" value="73%" sub="USAGE" />
+                <RoundMeter label="GPU" value="91%" sub="LOAD" />
+                <RoundMeter label="STORAGE" value="67%" sub="USAGE" />
+              </div>
+
+              <div className="diagnostic-bars">
+                <BarRow label="CORE TEMPERATURE" value="58°C" width="78%" />
+                <BarRow label="FAN SPEED" value="1420 RPM" width="72%" />
+                <BarRow label="VOLTAGE" value="1.26 V" width="46%" />
+                <BarRow label="SYSTEM HEALTH" value="OPTIMAL" width="91%" />
+              </div>
+            </Panel>
+
+            <Panel title="DATA STREAM MONITOR">
+              <div className="data-streams">
+                <DataWave label="DATA INTAKE" value="9.47 GB/s" variant={1} />
+                <DataWave label="DATA PROCESSING" value="7.23 GB/s" variant={2} />
+                <DataWave label="DATA OUTPUT" value="6.31 GB/s" variant={3} />
+                <DataWave label="AI LEARNING FEED" value="3.92 GB/s" variant={2} />
+              </div>
+            </Panel>
+
+            <div className="right-bottom-grid">
+              <Panel title="POWER MANAGEMENT">
+                <div className="power-content">
+                  <div className="power-ring">
+                    <strong>94%</strong>
+                    <span>EFFICIENCY</span>
+                  </div>
+
+                  <div className="power-bars">
+                    <BarRow label="RESERVE POWER" value="82%" width="82%" />
+                    <BarRow label="BATTERY LEVEL" value="76%" width="76%" />
+                    <BarRow label="GRID STABILITY" value="91%" width="91%" />
+                    <BarRow label="POWER FLOW" value="OPTIMAL" width="100%" />
+                  </div>
+                </div>
+              </Panel>
+
+              <Panel title="QUICK ACCESS">
+                <div className="quick-list">
+                  {quickActions.map((item) => (
+                    <button key={item}>
                       <span>◎ {item}</span>
-                      <span>›</span>
+                      <b>›</b>
                     </button>
                   ))}
                 </div>
-              </HudPanel>
+              </Panel>
             </div>
           </div>
         </section>
 
-        <footer className="hud-panel grid grid-cols-2 gap-3 px-5 py-3 text-[10px] uppercase tracking-[0.18em] text-cyan-300/80 md:grid-cols-6">
-          <p>User: Admin</p>
-          <p>Clearance: Level 10</p>
-          <p>System: Optimal</p>
-          <p>AI Confidence: 99.7%</p>
-          <p>Active Tasks: 24</p>
-          <p>Synchronization: Active</p>
+        <footer className="dashboard-footer">
+          <span>USER: <strong>ADMIN</strong></span>
+          <span>CLEARANCE: <strong>LEVEL 10</strong></span>
+          <span>SYSTEM <strong>OPTIMAL</strong></span>
+          <span>AI CONFIDENCE <strong>99.7%</strong></span>
+          <span>RESPONSE TIME <strong>0.0032s</strong></span>
+          <span>ACTIVE TASKS <strong>24</strong></span>
+          <span>SYNCHRONIZATION: <strong>ACTIVE</strong></span>
+          <Link href="/login">LOGOUT</Link>
         </footer>
       </div>
     </main>
