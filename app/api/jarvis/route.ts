@@ -1,11 +1,7 @@
-import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -19,37 +15,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { error: "OPENAI_API_KEY is missing from environment variables." },
-        { status: 500 }
-      );
-    }
-
-    const response = await client.responses.create({
-      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-      input: [
-        {
-          role: "system",
-          content:
-            "You are JARVIS, a futuristic AI work assistant for Medios Accesible. Be direct, technical, useful, and action-oriented. Help with web development, 3D, Blender, video editing, client work, business planning, GitHub, Vercel, Supabase, and project execution.",
-        },
-        {
-          role: "user",
-          content: message,
-        },
-      ],
-    });
-
     return NextResponse.json({
-      reply: response.output_text,
+      reply:
+        "JARVIS AI API is currently disabled. Local command tools are active. AI features can be upgraded later.",
+      mode: "local-only",
+      received: message,
     });
-  } catch (error) {
-    console.error("JARVIS API error:", error);
-
+  } catch {
     return NextResponse.json(
-      { error: "JARVIS failed to respond." },
-      { status: 500 }
+      { error: "Invalid request." },
+      { status: 400 }
     );
   }
 }
