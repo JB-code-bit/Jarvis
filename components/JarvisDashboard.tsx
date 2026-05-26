@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LiveJarvisCore from "@/components/LiveJarvisCore";
 
 const systemRows = [
   ["COMMUNICATIONS", "ONLINE"],
@@ -120,19 +121,18 @@ function DataWave({
   value: string;
   variant?: number;
 }) {
+  const points =
+    variant === 1
+      ? "0,24 10,22 20,26 30,16 40,28 50,24 60,20 70,22 80,18 90,26 100,25 110,13 120,30 130,22 140,18 150,24 160,27 170,19 180,16 190,25 200,29 210,18 220,22 230,16 240,27 250,21 260,22 270,18 280,25"
+      : variant === 2
+        ? "0,28 10,25 20,27 30,20 40,18 50,31 60,24 70,14 80,28 90,21 100,19 110,30 120,18 130,12 140,27 150,32 160,20 170,22 180,15 190,30 200,24 210,18 220,28 230,14 240,20 250,31 260,22 270,19 280,24"
+        : "0,20 10,22 20,18 30,30 40,24 50,19 60,26 70,28 80,16 90,20 100,24 110,21 120,29 130,15 140,23 150,26 160,22 170,19 180,31 190,24 200,20 210,26 220,18 230,22 240,28 250,16 260,25 270,21 280,24";
+
   return (
     <div className="data-wave-row">
       <span>{label}</span>
       <svg viewBox="0 0 280 44" preserveAspectRatio="none">
-        <polyline
-          points={
-            variant === 1
-              ? "0,24 10,22 20,26 30,16 40,28 50,24 60,20 70,22 80,18 90,26 100,25 110,13 120,30 130,22 140,18 150,24 160,27 170,19 180,16 190,25 200,29 210,18 220,22 230,16 240,27 250,21 260,22 270,18 280,25"
-              : variant === 2
-                ? "0,28 10,25 20,27 30,20 40,18 50,31 60,24 70,14 80,28 90,21 100,19 110,30 120,18 130,12 140,27 150,32 160,20 170,22 180,15 190,30 200,24 210,18 220,28 230,14 240,20 250,31 260,22 270,19 280,24"
-                : "0,20 10,22 20,18 30,30 40,24 50,19 60,26 70,28 80,16 90,20 100,24 110,21 120,29 130,15 140,23 150,26 160,22 170,19 180,31 190,24 200,20 210,26 220,18 230,22 240,28 250,16 260,25 270,21 280,24"
-          }
-        />
+        <polyline points={points} />
       </svg>
       <strong>{value}</strong>
     </div>
@@ -261,9 +261,15 @@ export default function JarvisDashboard() {
               <Panel title="AI CAPABILITIES">
                 <div className="capabilities-grid">
                   <div className="capability-text left">
-                    <p>NATURAL LANGUAGE <strong>100%</strong></p>
-                    <p>PATTERN RECOGNITION <strong>98%</strong></p>
-                    <p>PREDICTIVE ANALYTICS <strong>97%</strong></p>
+                    <p>
+                      NATURAL LANGUAGE <strong>100%</strong>
+                    </p>
+                    <p>
+                      PATTERN RECOGNITION <strong>98%</strong>
+                    </p>
+                    <p>
+                      PREDICTIVE ANALYTICS <strong>97%</strong>
+                    </p>
                   </div>
 
                   <div className="radar-core">
@@ -272,9 +278,15 @@ export default function JarvisDashboard() {
                   </div>
 
                   <div className="capability-text right">
-                    <p>MACHINE LEARNING <strong>100%</strong></p>
-                    <p>DECISION ENGINE <strong>99%</strong></p>
-                    <p>ADAPTIVE SYSTEMS <strong>96%</strong></p>
+                    <p>
+                      MACHINE LEARNING <strong>100%</strong>
+                    </p>
+                    <p>
+                      DECISION ENGINE <strong>99%</strong>
+                    </p>
+                    <p>
+                      ADAPTIVE SYSTEMS <strong>96%</strong>
+                    </p>
                   </div>
                 </div>
               </Panel>
@@ -284,31 +296,7 @@ export default function JarvisDashboard() {
           <div className="center-column">
             <Panel className="core-panel">
               <div className="core-wrap">
-                <div className="core-ring ring-a" />
-                <div className="core-ring ring-b" />
-                <div className="core-ring ring-c" />
-                <div className="core-ring ring-d" />
-                <div className="core-ring ring-e" />
-
-                <div className="core-ticks ticks-a" />
-                <div className="core-ticks ticks-b" />
-
-                <div className="core-side-marker left">▶</div>
-                <div className="core-side-marker right">◀</div>
-                <div className="core-top-marker">▼</div>
-
-                <div className="core-center">
-                  <div className="core-polygon">
-                    <div className="polygon-lines" />
-                    <div className="core-light" />
-                  </div>
-
-                  <h2>JARVIS</h2>
-                  <p>AI CORE</p>
-                  <span>SYSTEM STATUS</span>
-                  <strong>OPTIMAL</strong>
-                  <em>100%</em>
-                </div>
+                <LiveJarvisCore isSpeaking />
               </div>
             </Panel>
 
@@ -373,9 +361,17 @@ export default function JarvisDashboard() {
             <Panel title="DATA STREAM MONITOR">
               <div className="data-streams">
                 <DataWave label="DATA INTAKE" value="9.47 GB/s" variant={1} />
-                <DataWave label="DATA PROCESSING" value="7.23 GB/s" variant={2} />
+                <DataWave
+                  label="DATA PROCESSING"
+                  value="7.23 GB/s"
+                  variant={2}
+                />
                 <DataWave label="DATA OUTPUT" value="6.31 GB/s" variant={3} />
-                <DataWave label="AI LEARNING FEED" value="3.92 GB/s" variant={2} />
+                <DataWave
+                  label="AI LEARNING FEED"
+                  value="3.92 GB/s"
+                  variant={2}
+                />
               </div>
             </Panel>
 
@@ -411,13 +407,27 @@ export default function JarvisDashboard() {
         </section>
 
         <footer className="dashboard-footer">
-          <span>USER: <strong>ADMIN</strong></span>
-          <span>CLEARANCE: <strong>LEVEL 10</strong></span>
-          <span>SYSTEM <strong>OPTIMAL</strong></span>
-          <span>AI CONFIDENCE <strong>99.7%</strong></span>
-          <span>RESPONSE TIME <strong>0.0032s</strong></span>
-          <span>ACTIVE TASKS <strong>24</strong></span>
-          <span>SYNCHRONIZATION: <strong>ACTIVE</strong></span>
+          <span>
+            USER: <strong>ADMIN</strong>
+          </span>
+          <span>
+            CLEARANCE: <strong>LEVEL 10</strong>
+          </span>
+          <span>
+            SYSTEM <strong>OPTIMAL</strong>
+          </span>
+          <span>
+            AI CONFIDENCE <strong>99.7%</strong>
+          </span>
+          <span>
+            RESPONSE TIME <strong>0.0032s</strong>
+          </span>
+          <span>
+            ACTIVE TASKS <strong>24</strong>
+          </span>
+          <span>
+            SYNCHRONIZATION: <strong>ACTIVE</strong>
+          </span>
           <Link href="/login">LOGOUT</Link>
         </footer>
       </div>
