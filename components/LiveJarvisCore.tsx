@@ -28,8 +28,9 @@ function createParticleData(count: number): ParticleData {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
 
-    const shellBias = Math.pow(Math.random(), 0.32);
-    const r = THREE.MathUtils.lerp(0.18, 1.75, shellBias);
+    // Pushes more particles toward the outside shell, like your reference.
+    const shellBias = Math.pow(Math.random(), 0.28);
+    const r = THREE.MathUtils.lerp(0.25, 1.85, shellBias);
 
     base[i3] = r * Math.sin(phi) * Math.cos(theta);
     base[i3 + 1] = r * Math.cos(phi);
@@ -51,7 +52,7 @@ function createOuterParticles(count: number) {
 
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const r = THREE.MathUtils.lerp(1.8, 3.15, Math.random());
+    const r = THREE.MathUtils.lerp(1.9, 3.35, Math.random());
 
     positions[i3] = r * Math.sin(phi) * Math.cos(theta);
     positions[i3 + 1] = r * Math.cos(phi);
@@ -68,7 +69,7 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
   const centerGlowRef = useRef<THREE.Mesh>(null);
   const ringsRef = useRef<THREE.Group>(null);
 
-  const particleData = useMemo(() => createParticleData(5200), []);
+  const particleData = useMemo(() => createParticleData(6200), []);
 
   const particleGeometry = useMemo(() => {
     const geometry = new THREE.BufferGeometry();
@@ -86,7 +87,7 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
 
     geometry.setAttribute(
       "position",
-      new THREE.BufferAttribute(createOuterParticles(900), 3)
+      new THREE.BufferAttribute(createOuterParticles(1200), 3)
     );
 
     return geometry;
@@ -97,14 +98,14 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
     const positions = particleGeometry.attributes.position.array as Float32Array;
 
     const voiceEnergy = isSpeaking
-      ? 0.18 +
-        Math.abs(Math.sin(time * 9.5)) * 0.2 +
-        Math.abs(Math.sin(time * 17.5)) * 0.08
-      : 0.035;
+      ? 0.2 +
+        Math.abs(Math.sin(time * 9.5)) * 0.22 +
+        Math.abs(Math.sin(time * 17.5)) * 0.1
+      : 0.04;
 
     const breathing = isSpeaking
-      ? 1 + Math.sin(time * 10) * 0.055 + Math.sin(time * 21) * 0.025
-      : 1 + Math.sin(time * 1.35) * 0.025;
+      ? 1 + Math.sin(time * 10) * 0.065 + Math.sin(time * 21) * 0.032
+      : 1 + Math.sin(time * 1.35) * 0.028;
 
     for (let i = 0; i < particleData.count; i += 1) {
       const i3 = i * 3;
@@ -118,7 +119,7 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
       const r = particleData.radius[i];
 
       const organic =
-        Math.sin(time * speed + phase) * 0.045 +
+        Math.sin(time * speed + phase) * 0.05 +
         Math.cos(time * 0.55 + phase * 1.7) * 0.035;
 
       const speechRipple = isSpeaking
@@ -127,9 +128,9 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
 
       const pulse = breathing + organic + speechRipple;
 
-      const swirlX = Math.sin(time * 0.9 + phase) * 0.045;
-      const swirlY = Math.cos(time * 0.7 + phase * 1.2) * 0.045;
-      const swirlZ = Math.sin(time * 0.6 + phase * 1.8) * 0.045;
+      const swirlX = Math.sin(time * 0.9 + phase) * 0.048;
+      const swirlY = Math.cos(time * 0.7 + phase * 1.2) * 0.048;
+      const swirlZ = Math.sin(time * 0.6 + phase * 1.8) * 0.048;
 
       positions[i3] = bx * pulse + swirlX;
       positions[i3 + 1] = by * pulse + swirlY;
@@ -142,7 +143,7 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
       pointsRef.current.rotation.y = time * 0.09;
       pointsRef.current.rotation.x = Math.sin(time * 0.28) * 0.12;
       pointsRef.current.rotation.z = Math.cos(time * 0.22) * 0.05;
-      pointsRef.current.scale.setScalar(isSpeaking ? 1.045 : 1);
+      pointsRef.current.scale.setScalar(isSpeaking ? 1.05 : 1);
     }
 
     if (outerPointsRef.current) {
@@ -166,8 +167,8 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
 
     if (centerGlowRef.current) {
       const scale = isSpeaking
-        ? 1 + Math.abs(Math.sin(time * 18)) * 0.2
-        : 1 + Math.sin(time * 2.1) * 0.06;
+        ? 1 + Math.abs(Math.sin(time * 18)) * 0.18
+        : 1 + Math.sin(time * 2.1) * 0.05;
 
       centerGlowRef.current.scale.setScalar(scale);
     }
@@ -211,22 +212,22 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
       </group>
 
       <mesh ref={glowRef}>
-        <sphereGeometry args={[1.95, 64, 64]} />
+        <sphereGeometry args={[2.05, 64, 64]} />
         <meshBasicMaterial
           color="#009dff"
           transparent
-          opacity={0.08}
+          opacity={0.12}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
       </mesh>
 
       <mesh ref={centerGlowRef}>
-        <sphereGeometry args={[0.34, 48, 48]} />
+        <sphereGeometry args={[0.22, 48, 48]} />
         <meshBasicMaterial
           color="#dff8ff"
           transparent
-          opacity={0.42}
+          opacity={0.32}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -235,10 +236,10 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
       <points ref={pointsRef} geometry={particleGeometry}>
         <pointsMaterial
           color="#00d9ff"
-          size={0.018}
+          size={0.021}
           sizeAttenuation
           transparent
-          opacity={0.96}
+          opacity={1}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -247,10 +248,10 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
       <points ref={outerPointsRef} geometry={outerGeometry}>
         <pointsMaterial
           color="#bff6ff"
-          size={0.012}
+          size={0.013}
           sizeAttenuation
           transparent
-          opacity={0.42}
+          opacity={0.5}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -275,8 +276,10 @@ export default function LiveJarvisCore({
             antialias: true,
             powerPreference: "high-performance",
           }}
+          onCreated={({ gl }) => {
+            gl.setClearColor(0x000000, 0);
+          }}
         >
-          <color attach="background" args={["transparent"]} />
           <ambientLight intensity={0.8} />
           <ParticleCoreScene isSpeaking={speaking} />
         </Canvas>
