@@ -1,12 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import LiveJarvisCore from "@/components/LiveJarvisCore";
 
 const systemRows = [
   ["COMMUNICATIONS", "ONLINE"],
   ["SATELLITES", "ONLINE"],
-  ["DATABASE", "ONLINE"],
+  ["DATABASE", "LOCAL"],
   ["SERVER NODES", "ONLINE"],
-  ["AI SUBSYSTEMS", "ONLINE"],
+  ["AI SUBSYSTEMS", "LOCAL"],
   ["SECURITY GRID", "ONLINE"],
   ["POWER GRID", "STABLE"],
   ["NETWORK STATUS", "SECURE"],
@@ -14,23 +17,28 @@ const systemRows = [
 
 const logs = [
   ["10:42:11", "System boot sequence completed"],
-  ["10:42:15", "AI core synchronization successful"],
-  ["10:42:18", "Network security protocols active"],
-  ["10:42:21", "Satellite uplink established"],
-  ["10:42:24", "Database integrity verified"],
-  ["10:42:28", "All systems operational"],
-  ["10:42:32", "Continuous monitoring active"],
+  ["10:42:15", "Local command mode active"],
+  ["10:42:18", "Text console initialized"],
+  ["10:42:21", "Particle core initialized"],
+  ["10:42:24", "Dashboard interface online"],
+  ["10:42:28", "No external AI API connected"],
+  ["10:42:32", "Awaiting user command"],
 ];
 
 const quickActions = [
   "COMMAND CONSOLE",
-  "FILE BROWSER",
-  "SYSTEM SETTINGS",
-  "SECURITY CENTER",
-  "AI TRAINING MODE",
-  "DIAGNOSTIC TOOLS",
-  "CUSTOMIZE DASHBOARD",
+  "TIMER",
+  "STOPWATCH",
+  "POMODORO",
+  "TASKS",
+  "NOTES",
+  "MEMORY",
 ];
+
+type ChatMessage = {
+  sender: "user" | "jarvis";
+  text: string;
+};
 
 function Panel({
   title,
@@ -139,7 +147,165 @@ function DataWave({
   );
 }
 
+function TextConsolePanel() {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      sender: "jarvis",
+      text: "Text console online. Local mode active. External AI is currently disabled.",
+    },
+  ]);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const cleanMessage = message.trim();
+
+    if (!cleanMessage) {
+      return;
+    }
+
+    setMessages((current) => [
+      ...current,
+      {
+        sender: "user",
+        text: cleanMessage,
+      },
+      {
+        sender: "jarvis",
+        text: `Command received: "${cleanMessage}". Local command routing will be connected next.`,
+      },
+    ]);
+
+    setMessage("");
+  }
+
+  return (
+    <Panel title="TEXT CONSOLE" className="text-console-panel">
+      <div className="text-console-shell">
+        <div className="text-console-header">
+          <div>
+            <p>JARVIS TEXT INTERFACE</p>
+            <span>LOCAL / NO API / FUTURE AI READY</span>
+          </div>
+
+          <strong>ONLINE</strong>
+        </div>
+
+        <div className="text-console-window">
+          {messages.map((item, index) => (
+            <div
+              key={`${item.sender}-${index}`}
+              className={`text-console-message ${
+                item.sender === "user" ? "user" : "jarvis"
+              }`}
+            >
+              <small>{item.sender === "user" ? "YOU" : "JARVIS"}</small>
+              <p>{item.text}</p>
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={handleSubmit} className="text-console-form">
+          <input
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            placeholder="Type to JARVIS..."
+          />
+
+          <button type="submit">SEND</button>
+        </form>
+
+        <div className="text-console-footer">
+          <span>OVERVIEW RETURNS DASHBOARD</span>
+          <span>VOICE NEXT</span>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function RightOverviewColumn() {
+  return (
+    <div className="right-column">
+      <Panel title="SYSTEM DIAGNOSTICS">
+        <div className="meter-grid">
+          <RoundMeter label="CPU" value="82%" sub="LOAD" />
+          <RoundMeter label="MEMORY" value="73%" sub="USAGE" />
+          <RoundMeter label="CORE" value="91%" sub="ACTIVE" />
+          <RoundMeter label="LOCAL" value="67%" sub="TOOLS" />
+        </div>
+
+        <div className="diagnostic-bars">
+          <BarRow label="COMMAND ROUTER" value="READY" width="78%" />
+          <BarRow label="VOICE SYSTEM" value="PENDING" width="42%" />
+          <BarRow label="LOCAL STORAGE" value="READY" width="72%" />
+          <BarRow label="SYSTEM HEALTH" value="OPTIMAL" width="91%" />
+        </div>
+      </Panel>
+
+      <Panel title="DATA STREAM MONITOR">
+        <div className="data-streams">
+          <DataWave label="COMMAND INPUT" value="LOCAL" variant={1} />
+          <DataWave label="TASK SYSTEM" value="READY" variant={2} />
+          <DataWave label="NOTE SYSTEM" value="READY" variant={3} />
+          <DataWave label="AI UPGRADE" value="LATER" variant={2} />
+        </div>
+      </Panel>
+
+      <div className="right-bottom-grid">
+        <Panel title="WORK MODES">
+          <div className="power-content">
+            <div className="power-ring">
+              <strong>0$</strong>
+              <span>API COST</span>
+            </div>
+
+            <div className="power-bars">
+              <BarRow label="CODE MODE" value="MANUAL" width="82%" />
+              <BarRow label="BLENDER MODE" value="READY" width="76%" />
+              <BarRow label="VIDEO MODE" value="READY" width="91%" />
+              <BarRow label="BUSINESS MODE" value="READY" width="100%" />
+            </div>
+          </div>
+        </Panel>
+
+        <Panel title="QUICK ACCESS">
+          <div className="quick-list">
+            {quickActions.map((item) => (
+              <button key={item}>
+                <span>◎ {item}</span>
+                <b>›</b>
+              </button>
+            ))}
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function RightTextColumn() {
+  return (
+    <div className="right-column text-column-open">
+      <TextConsolePanel />
+
+      <Panel title="TEXT SYSTEM STATUS">
+        <div className="diagnostic-bars">
+          <BarRow label="TEXT CONSOLE" value="ONLINE" width="92%" />
+          <BarRow label="LOCAL ROUTER" value="READY" width="78%" />
+          <BarRow label="AI API" value="OFF" width="12%" />
+          <BarRow label="VOICE OUTPUT" value="NEXT" width="46%" />
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
 export default function JarvisDashboard() {
+  const [activeTab, setActiveTab] = useState("OVERVIEW");
+  const isTextMode = activeTab === "TEXT";
+
   return (
     <main className="jarvis-dashboard">
       <div className="dashboard-grid-bg" />
@@ -151,29 +317,34 @@ export default function JarvisDashboard() {
           <div className="header-left">
             <StatusBox icon="◴" label="SYSTEM" value="ONLINE" />
             <StatusBox icon="◈" label="NETWORK" value="SECURE" />
-            <StatusBox icon="◎" label="AI CORE" value="ACTIVE" />
+            <StatusBox icon="◎" label="CORE" value="ACTIVE" />
           </div>
 
           <div className="header-title">
             <div className="header-line left" />
             <div>
               <h1>JARVIS</h1>
-              <p>AI SYSTEM CONTROL CENTER</p>
+              <p>LOCAL SYSTEM CONTROL CENTER</p>
             </div>
             <div className="header-line right" />
           </div>
 
           <div className="header-right">
             <StatusBox icon="◷" label="10:42:36 AM" />
-            <StatusBox icon="▣" label="SAT, MAY 24, 2025" />
-            <StatusBox icon="□" label="UPTIME" value="128:47:12" />
+            <StatusBox icon="▣" label={isTextMode ? "TEXT MODE" : "LOCAL MODE"} />
+            <StatusBox icon="□" label="API" value="OFF" />
           </div>
         </header>
 
         <nav className="dashboard-tabs">
-          {["OVERVIEW", "SYSTEMS", "NETWORK", "DIAGNOSTICS", "UTILITIES"].map(
-            (item, index) => (
-              <button key={item} className={index === 0 ? "active" : ""}>
+          {["OVERVIEW", "SYSTEMS", "NETWORK", "DIAGNOSTICS", "TEXT"].map(
+            (item) => (
+              <button
+                key={item}
+                type="button"
+                className={activeTab === item ? "active" : ""}
+                onClick={() => setActiveTab(item)}
+              >
                 {item}
               </button>
             )
@@ -182,7 +353,7 @@ export default function JarvisDashboard() {
 
         <section className="dashboard-main">
           <div className="left-column">
-            <Panel title="GLOBAL SYSTEMS" className="global-panel">
+            <Panel title="LOCAL SYSTEMS" className="global-panel">
               <div className="global-content">
                 <div className="earth-orb">
                   <div className="earth-ring r1" />
@@ -210,7 +381,7 @@ export default function JarvisDashboard() {
               </div>
             </Panel>
 
-            <Panel title="NETWORK OVERVIEW" className="network-panel">
+            <Panel title="LOCAL TOOL MAP" className="network-panel">
               <div className="map-box">
                 <div className="map-grid" />
                 <svg viewBox="0 0 460 170" preserveAspectRatio="none">
@@ -227,20 +398,20 @@ export default function JarvisDashboard() {
 
               <div className="network-stats">
                 <div>
-                  <span>ACTIVE CONNECTIONS</span>
-                  <strong>1,842</strong>
+                  <span>TIMERS</span>
+                  <strong>READY</strong>
                 </div>
                 <div>
-                  <span>SECURE NODES</span>
-                  <strong>256</strong>
+                  <span>TASKS</span>
+                  <strong>LOCAL</strong>
                 </div>
                 <div>
-                  <span>DATA PACKETS / SEC</span>
-                  <strong>9.47M</strong>
+                  <span>NOTES</span>
+                  <strong>LOCAL</strong>
                 </div>
                 <div>
-                  <span>THREAT LEVEL</span>
-                  <strong>LOW</strong>
+                  <span>AI API</span>
+                  <strong>OFF</strong>
                 </div>
               </div>
             </Panel>
@@ -258,17 +429,17 @@ export default function JarvisDashboard() {
                 <button className="small-hud-button">VIEW FULL LOGS</button>
               </Panel>
 
-              <Panel title="AI CAPABILITIES">
+              <Panel title="LOCAL CAPABILITIES">
                 <div className="capabilities-grid">
                   <div className="capability-text left">
                     <p>
-                      NATURAL LANGUAGE <strong>100%</strong>
+                      TIMERS <strong>READY</strong>
                     </p>
                     <p>
-                      PATTERN RECOGNITION <strong>98%</strong>
+                      STOPWATCH <strong>READY</strong>
                     </p>
                     <p>
-                      PREDICTIVE ANALYTICS <strong>97%</strong>
+                      POMODORO <strong>READY</strong>
                     </p>
                   </div>
 
@@ -279,13 +450,13 @@ export default function JarvisDashboard() {
 
                   <div className="capability-text right">
                     <p>
-                      MACHINE LEARNING <strong>100%</strong>
+                      TASKS <strong>LOCAL</strong>
                     </p>
                     <p>
-                      DECISION ENGINE <strong>99%</strong>
+                      NOTES <strong>LOCAL</strong>
                     </p>
                     <p>
-                      ADAPTIVE SYSTEMS <strong>96%</strong>
+                      MEMORY <strong>LOCAL</strong>
                     </p>
                   </div>
                 </div>
@@ -296,7 +467,7 @@ export default function JarvisDashboard() {
           <div className="center-column">
             <Panel className="core-panel">
               <div className="core-wrap">
-                <LiveJarvisCore isSpeaking />
+                <LiveJarvisCore isSpeaking={isTextMode} />
               </div>
             </Panel>
 
@@ -305,10 +476,10 @@ export default function JarvisDashboard() {
                 <div className="sequence-list">
                   {[
                     ["SYSTEM INIT", "00:00:00"],
-                    ["NETWORK SYNC", "00:00:02"],
-                    ["DATA LOAD", "00:00:05"],
-                    ["AI CORE READY", "00:00:07"],
-                    ["SYSTEM OPTIMAL", "00:00:10"],
+                    [isTextMode ? "TEXT MODE" : "LOCAL MODE", "00:00:02"],
+                    ["CORE LOAD", "00:00:05"],
+                    ["TOOLS READY", "00:00:07"],
+                    ["AWAIT COMMAND", "00:00:10"],
                   ].map(([name, time]) => (
                     <div key={name}>
                       <i />
@@ -319,7 +490,7 @@ export default function JarvisDashboard() {
                 </div>
               </Panel>
 
-              <Panel title="REAL-TIME ANALYTICS">
+              <Panel title={isTextMode ? "TEXT ACTIVITY" : "COMMAND ACTIVITY"}>
                 <div className="analytics-bars">
                   {Array.from({ length: 56 }).map((_, index) => (
                     <i
@@ -332,78 +503,16 @@ export default function JarvisDashboard() {
                 </div>
               </Panel>
 
-              <Panel title="AI CONFIDENCE">
-                <div className="big-stat">99.7%</div>
+              <Panel title="LOCAL STATUS">
+                <div className="big-stat">{isTextMode ? "TEXT" : "READY"}</div>
                 <div className="stat-line">
-                  <i style={{ width: "99%" }} />
+                  <i style={{ width: isTextMode ? "88%" : "74%" }} />
                 </div>
               </Panel>
             </div>
           </div>
 
-          <div className="right-column">
-            <Panel title="SYSTEM DIAGNOSTICS">
-              <div className="meter-grid">
-                <RoundMeter label="CPU" value="82%" sub="LOAD" />
-                <RoundMeter label="MEMORY" value="73%" sub="USAGE" />
-                <RoundMeter label="GPU" value="91%" sub="LOAD" />
-                <RoundMeter label="STORAGE" value="67%" sub="USAGE" />
-              </div>
-
-              <div className="diagnostic-bars">
-                <BarRow label="CORE TEMPERATURE" value="58°C" width="78%" />
-                <BarRow label="FAN SPEED" value="1420 RPM" width="72%" />
-                <BarRow label="VOLTAGE" value="1.26 V" width="46%" />
-                <BarRow label="SYSTEM HEALTH" value="OPTIMAL" width="91%" />
-              </div>
-            </Panel>
-
-            <Panel title="DATA STREAM MONITOR">
-              <div className="data-streams">
-                <DataWave label="DATA INTAKE" value="9.47 GB/s" variant={1} />
-                <DataWave
-                  label="DATA PROCESSING"
-                  value="7.23 GB/s"
-                  variant={2}
-                />
-                <DataWave label="DATA OUTPUT" value="6.31 GB/s" variant={3} />
-                <DataWave
-                  label="AI LEARNING FEED"
-                  value="3.92 GB/s"
-                  variant={2}
-                />
-              </div>
-            </Panel>
-
-            <div className="right-bottom-grid">
-              <Panel title="POWER MANAGEMENT">
-                <div className="power-content">
-                  <div className="power-ring">
-                    <strong>94%</strong>
-                    <span>EFFICIENCY</span>
-                  </div>
-
-                  <div className="power-bars">
-                    <BarRow label="RESERVE POWER" value="82%" width="82%" />
-                    <BarRow label="BATTERY LEVEL" value="76%" width="76%" />
-                    <BarRow label="GRID STABILITY" value="91%" width="91%" />
-                    <BarRow label="POWER FLOW" value="OPTIMAL" width="100%" />
-                  </div>
-                </div>
-              </Panel>
-
-              <Panel title="QUICK ACCESS">
-                <div className="quick-list">
-                  {quickActions.map((item) => (
-                    <button key={item}>
-                      <span>◎ {item}</span>
-                      <b>›</b>
-                    </button>
-                  ))}
-                </div>
-              </Panel>
-            </div>
-          </div>
+          {isTextMode ? <RightTextColumn /> : <RightOverviewColumn />}
         </section>
 
         <footer className="dashboard-footer">
@@ -411,22 +520,22 @@ export default function JarvisDashboard() {
             USER: <strong>ADMIN</strong>
           </span>
           <span>
-            CLEARANCE: <strong>LEVEL 10</strong>
+            MODE: <strong>{isTextMode ? "TEXT" : "LOCAL"}</strong>
           </span>
           <span>
             SYSTEM <strong>OPTIMAL</strong>
           </span>
           <span>
-            AI CONFIDENCE <strong>99.7%</strong>
+            API COST <strong>$0</strong>
           </span>
           <span>
-            RESPONSE TIME <strong>0.0032s</strong>
+            COMMANDS <strong>READY</strong>
           </span>
           <span>
-            ACTIVE TASKS <strong>24</strong>
+            TEXT <strong>{isTextMode ? "OPEN" : "STANDBY"}</strong>
           </span>
           <span>
-            SYNCHRONIZATION: <strong>ACTIVE</strong>
+            SYNCHRONIZATION: <strong>OFF</strong>
           </span>
           <Link href="/login">LOGOUT</Link>
         </footer>
