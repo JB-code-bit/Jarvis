@@ -1355,6 +1355,165 @@ input {
 }
 
 /* =========================================================
+   TEXT CONSOLE MODE
+========================================================= */
+
+.text-column-open {
+  grid-template-rows: 1fr 220px;
+}
+
+.text-console-panel {
+  min-height: 0;
+}
+
+.text-console-shell {
+  height: 100%;
+  min-height: 570px;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 14px;
+}
+
+.text-console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(0, 217, 255, 0.16), transparent 42%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.text-console-header p {
+  margin: 0;
+  color: #eaffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.text-console-header span {
+  display: block;
+  margin-top: 5px;
+  color: rgba(223, 248, 255, 0.48);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.text-console-header strong {
+  color: var(--jarvis-green);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 14px rgba(77, 255, 186, 0.4);
+}
+
+.text-console-window {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  border: 1px solid rgba(0, 217, 255, 0.18);
+  background:
+    linear-gradient(rgba(0, 217, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.035) 1px, transparent 1px),
+    rgba(0, 0, 0, 0.34);
+  background-size: 24px 24px;
+  box-shadow: inset 0 0 32px rgba(0, 217, 255, 0.055);
+}
+
+.text-console-message {
+  max-width: 88%;
+  margin-bottom: 12px;
+  padding: 11px 12px;
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  background: rgba(0, 34, 64, 0.46);
+  box-shadow: 0 0 16px rgba(0, 217, 255, 0.08);
+}
+
+.text-console-message small {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: var(--jarvis-cyan);
+}
+
+.text-console-message p {
+  margin: 0;
+  color: rgba(223, 248, 255, 0.82);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.text-console-message.user {
+  margin-left: auto;
+  border-color: rgba(77, 255, 186, 0.28);
+  background: rgba(0, 80, 64, 0.32);
+}
+
+.text-console-message.user small {
+  color: var(--jarvis-green);
+}
+
+.text-console-form {
+  display: grid;
+  grid-template-columns: 1fr 92px;
+  gap: 10px;
+}
+
+.text-console-form input {
+  height: 44px;
+  border: 1px solid rgba(0, 217, 255, 0.28);
+  background: rgba(0, 0, 0, 0.42);
+  color: #eaffff;
+  padding: 0 12px;
+  outline: none;
+  font-size: 12px;
+}
+
+.text-console-form input::placeholder {
+  color: rgba(223, 248, 255, 0.34);
+}
+
+.text-console-form input:focus {
+  border-color: rgba(0, 217, 255, 0.78);
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.18);
+}
+
+.text-console-form button {
+  border: 1px solid rgba(0, 217, 255, 0.72);
+  background: rgba(0, 217, 255, 0.12);
+  color: #eaffff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  box-shadow:
+    0 0 18px rgba(0, 217, 255, 0.16),
+    inset 0 0 18px rgba(0, 217, 255, 0.08);
+}
+
+.text-console-form button:hover {
+  background: rgba(0, 217, 255, 0.2);
+  box-shadow:
+    0 0 28px rgba(0, 217, 255, 0.28),
+    inset 0 0 22px rgba(0, 217, 255, 0.12);
+}
+
+.text-console-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: rgba(223, 248, 255, 0.44);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+/* =========================================================
    FOOTER
 ========================================================= */
 
@@ -1413,6 +1572,14 @@ input {
 
   .right-column {
     grid-template-rows: 245px 220px 1fr;
+  }
+
+  .text-column-open {
+    grid-template-rows: 1fr 190px;
+  }
+
+  .text-console-shell {
+    min-height: 470px;
   }
 
   .global-content {
