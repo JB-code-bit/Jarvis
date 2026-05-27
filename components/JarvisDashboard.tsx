@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { useState } from "react";
 import LiveJarvisCore from "@/components/LiveJarvisCore";
+import {
+  getLocalJarvisResponse,
+  localCommandExamples,
+} from "@/lib/jarvisLocalBrain";
 
 const systemRows = [
   ["COMMUNICATIONS", "ONLINE"],
   ["SATELLITES", "ONLINE"],
-  ["DATABASE", "LOCAL"],
+  ["DATABASE", "SUPABASE"],
   ["SERVER NODES", "ONLINE"],
   ["AI SUBSYSTEMS", "LOCAL"],
   ["SECURITY GRID", "ONLINE"],
@@ -17,10 +21,10 @@ const systemRows = [
 
 const logs = [
   ["10:42:11", "System boot sequence completed"],
-  ["10:42:15", "Local command mode active"],
+  ["10:42:15", "Supabase memory layer active"],
   ["10:42:18", "Text console initialized"],
   ["10:42:21", "Particle core initialized"],
-  ["10:42:24", "Dashboard interface online"],
+  ["10:42:24", "Wake call protocol loaded"],
   ["10:42:28", "No external AI API connected"],
   ["10:42:32", "Awaiting user command"],
 ];
@@ -147,23 +151,50 @@ function DataWave({
   );
 }
 
-function TextConsolePanel() {
+function TextConsolePanel({
+  onJarvisSpeaking,
+}: {
+  onJarvisSpeaking: (speaking: boolean) => void;
+}) {
   const [message, setMessage] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       sender: "jarvis",
-      text: "Text console online. Local mode active. External AI is currently disabled.",
+      text: "Text console online. Supabase memory layer ready. Ask: Jarvis, are you up?",
     },
   ]);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function triggerSpeakingPulse() {
+    onJarvisSpeaking(true);
+
+    window.setTimeout(() => {
+      onJarvisSpeaking(false);
+    }, 1800);
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const cleanMessage = message.trim();
 
-    if (!cleanMessage) {
+    if (!cleanMessage || isThinking) {
       return;
     }
+
+    if (cleanMessage.toLowerCase() === "clear chat") {
+      setMessages([
+        {
+          sender: "jarvis",
+          text: "Chat cleared. Supabase memory remains stored. Local response engine standing by.",
+        },
+      ]);
+      setMessage("");
+      triggerSpeakingPulse();
+      return;
+    }
+
+    setIsThinking(true);
 
     setMessages((current) => [
       ...current,
@@ -171,13 +202,22 @@ function TextConsolePanel() {
         sender: "user",
         text: cleanMessage,
       },
-      {
-        sender: "jarvis",
-        text: `Command received: "${cleanMessage}". Local command routing will be connected next.`,
-      },
     ]);
 
     setMessage("");
+
+    const result = await getLocalJarvisResponse(cleanMessage);
+
+    setMessages((current) => [
+      ...current,
+      {
+        sender: "jarvis",
+        text: result.response,
+      },
+    ]);
+
+    setIsThinking(false);
+    triggerSpeakingPulse();
   }
 
   return (
@@ -186,10 +226,10 @@ function TextConsolePanel() {
         <div className="text-console-header">
           <div>
             <p>JARVIS TEXT INTERFACE</p>
-            <span>LOCAL / NO API / FUTURE AI READY</span>
+            <span>LOCAL RESPONSE ENGINE / SUPABASE MEMORY</span>
           </div>
 
-          <strong>ONLINE</strong>
+          <strong>{isThinking ? "PROCESSING" : "ONLINE"}</strong>
         </div>
 
         <div className="text-console-window">
@@ -204,21 +244,42 @@ function TextConsolePanel() {
               <p>{item.text}</p>
             </div>
           ))}
+
+          {isThinking && (
+            <div className="text-console-message jarvis">
+              <small>JARVIS</small>
+              <p>Processing local command...</p>
+            </div>
+          )}
+        </div>
+
+        <div className="text-console-examples">
+          {localCommandExamples.map((example) => (
+            <button
+              key={example}
+              type="button"
+              onClick={() => setMessage(example)}
+            >
+              {example}
+            </button>
+          ))}
         </div>
 
         <form onSubmit={handleSubmit} className="text-console-form">
           <input
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            placeholder="Type to JARVIS..."
+            placeholder="Type a local JARVIS command..."
           />
 
-          <button type="submit">SEND</button>
+          <button type="submit" disabled={isThinking}>
+            {isThinking ? "..." : "SEND"}
+          </button>
         </form>
 
         <div className="text-console-footer">
-          <span>OVERVIEW RETURNS DASHBOARD</span>
-          <span>VOICE NEXT</span>
+          <span>WAKE CALL READY</span>
+          <span>SUPABASE MEMORY ACTIVE</span>
         </div>
       </div>
     </Panel>
@@ -239,7 +300,7 @@ function RightOverviewColumn() {
         <div className="diagnostic-bars">
           <BarRow label="COMMAND ROUTER" value="READY" width="78%" />
           <BarRow label="VOICE SYSTEM" value="PENDING" width="42%" />
-          <BarRow label="LOCAL STORAGE" value="READY" width="72%" />
+          <BarRow label="SUPABASE MEMORY" value="ACTIVE" width="82%" />
           <BarRow label="SYSTEM HEALTH" value="OPTIMAL" width="91%" />
         </div>
       </Panel>
@@ -247,8 +308,8 @@ function RightOverviewColumn() {
       <Panel title="DATA STREAM MONITOR">
         <div className="data-streams">
           <DataWave label="COMMAND INPUT" value="LOCAL" variant={1} />
-          <DataWave label="TASK SYSTEM" value="READY" variant={2} />
-          <DataWave label="NOTE SYSTEM" value="READY" variant={3} />
+          <DataWave label="SHORT MEMORY" value="ACTIVE" variant={2} />
+          <DataWave label="LONG MEMORY" value="ACTIVE" variant={3} />
           <DataWave label="AI UPGRADE" value="LATER" variant={2} />
         </div>
       </Panel>
@@ -258,7 +319,7 @@ function RightOverviewColumn() {
           <div className="power-content">
             <div className="power-ring">
               <strong>0$</strong>
-              <span>API COST</span>
+              <span>AI COST</span>
             </div>
 
             <div className="power-bars">
@@ -285,17 +346,21 @@ function RightOverviewColumn() {
   );
 }
 
-function RightTextColumn() {
+function RightTextColumn({
+  onJarvisSpeaking,
+}: {
+  onJarvisSpeaking: (speaking: boolean) => void;
+}) {
   return (
     <div className="right-column text-column-open">
-      <TextConsolePanel />
+      <TextConsolePanel onJarvisSpeaking={onJarvisSpeaking} />
 
       <Panel title="TEXT SYSTEM STATUS">
         <div className="diagnostic-bars">
-          <BarRow label="TEXT CONSOLE" value="ONLINE" width="92%" />
-          <BarRow label="LOCAL ROUTER" value="READY" width="78%" />
+          <BarRow label="WAKE CALL" value="READY" width="96%" />
+          <BarRow label="LOCAL ROUTER" value="READY" width="88%" />
+          <BarRow label="SUPABASE MEMORY" value="ACTIVE" width="82%" />
           <BarRow label="AI API" value="OFF" width="12%" />
-          <BarRow label="VOICE OUTPUT" value="NEXT" width="46%" />
         </div>
       </Panel>
     </div>
@@ -304,6 +369,8 @@ function RightTextColumn() {
 
 export default function JarvisDashboard() {
   const [activeTab, setActiveTab] = useState("OVERVIEW");
+  const [jarvisSpeaking, setJarvisSpeaking] = useState(false);
+
   const isTextMode = activeTab === "TEXT";
 
   return (
@@ -343,7 +410,10 @@ export default function JarvisDashboard() {
                 key={item}
                 type="button"
                 className={activeTab === item ? "active" : ""}
-                onClick={() => setActiveTab(item)}
+                onClick={() => {
+                  setActiveTab(item);
+                  setJarvisSpeaking(false);
+                }}
               >
                 {item}
               </button>
@@ -381,7 +451,7 @@ export default function JarvisDashboard() {
               </div>
             </Panel>
 
-            <Panel title="LOCAL TOOL MAP" className="network-panel">
+            <Panel title="MEMORY MAP" className="network-panel">
               <div className="map-box">
                 <div className="map-grid" />
                 <svg viewBox="0 0 460 170" preserveAspectRatio="none">
@@ -398,16 +468,16 @@ export default function JarvisDashboard() {
 
               <div className="network-stats">
                 <div>
-                  <span>TIMERS</span>
+                  <span>SHORT</span>
                   <strong>READY</strong>
                 </div>
                 <div>
-                  <span>TASKS</span>
-                  <strong>LOCAL</strong>
+                  <span>LONG</span>
+                  <strong>READY</strong>
                 </div>
                 <div>
-                  <span>NOTES</span>
-                  <strong>LOCAL</strong>
+                  <span>WAKE</span>
+                  <strong>READY</strong>
                 </div>
                 <div>
                   <span>AI API</span>
@@ -433,13 +503,13 @@ export default function JarvisDashboard() {
                 <div className="capabilities-grid">
                   <div className="capability-text left">
                     <p>
-                      TIMERS <strong>READY</strong>
+                      WAKE CALL <strong>READY</strong>
                     </p>
                     <p>
-                      STOPWATCH <strong>READY</strong>
+                      TEXT ENGINE <strong>READY</strong>
                     </p>
                     <p>
-                      POMODORO <strong>READY</strong>
+                      SHORT MEMORY <strong>READY</strong>
                     </p>
                   </div>
 
@@ -450,13 +520,13 @@ export default function JarvisDashboard() {
 
                   <div className="capability-text right">
                     <p>
-                      TASKS <strong>LOCAL</strong>
+                      LONG MEMORY <strong>READY</strong>
                     </p>
                     <p>
-                      NOTES <strong>LOCAL</strong>
+                      SUPABASE <strong>ACTIVE</strong>
                     </p>
                     <p>
-                      MEMORY <strong>LOCAL</strong>
+                      API COST <strong>$0</strong>
                     </p>
                   </div>
                 </div>
@@ -467,7 +537,7 @@ export default function JarvisDashboard() {
           <div className="center-column">
             <Panel className="core-panel">
               <div className="core-wrap">
-                <LiveJarvisCore isSpeaking={isTextMode} />
+                <LiveJarvisCore isSpeaking={jarvisSpeaking} />
               </div>
             </Panel>
 
@@ -477,8 +547,8 @@ export default function JarvisDashboard() {
                   {[
                     ["SYSTEM INIT", "00:00:00"],
                     [isTextMode ? "TEXT MODE" : "LOCAL MODE", "00:00:02"],
-                    ["CORE LOAD", "00:00:05"],
-                    ["TOOLS READY", "00:00:07"],
+                    ["WAKE READY", "00:00:05"],
+                    ["MEMORY READY", "00:00:07"],
                     ["AWAIT COMMAND", "00:00:10"],
                   ].map(([name, time]) => (
                     <div key={name}>
@@ -512,7 +582,11 @@ export default function JarvisDashboard() {
             </div>
           </div>
 
-          {isTextMode ? <RightTextColumn /> : <RightOverviewColumn />}
+          {isTextMode ? (
+            <RightTextColumn onJarvisSpeaking={setJarvisSpeaking} />
+          ) : (
+            <RightOverviewColumn />
+          )}
         </section>
 
         <footer className="dashboard-footer">
@@ -523,10 +597,10 @@ export default function JarvisDashboard() {
             MODE: <strong>{isTextMode ? "TEXT" : "LOCAL"}</strong>
           </span>
           <span>
-            SYSTEM <strong>OPTIMAL</strong>
+            MEMORY <strong>SUPABASE</strong>
           </span>
           <span>
-            API COST <strong>$0</strong>
+            AI COST <strong>$0</strong>
           </span>
           <span>
             COMMANDS <strong>READY</strong>
@@ -535,7 +609,7 @@ export default function JarvisDashboard() {
             TEXT <strong>{isTextMode ? "OPEN" : "STANDBY"}</strong>
           </span>
           <span>
-            SYNCHRONIZATION: <strong>OFF</strong>
+            SYNCHRONIZATION: <strong>ACTIVE</strong>
           </span>
           <Link href="/login">LOGOUT</Link>
         </footer>
