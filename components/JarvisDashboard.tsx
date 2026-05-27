@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import LiveJarvisCore from "@/components/LiveJarvisCore";
+import JarvisVoiceControl from "@/components/JarvisVoiceControl";
 import {
   getLocalJarvisResponse,
   localCommandExamples,
@@ -22,11 +23,11 @@ const systemRows = [
 const logs = [
   ["10:42:11", "System boot sequence completed"],
   ["10:42:15", "Supabase memory layer active"],
-  ["10:42:18", "Text console initialized"],
+  ["10:42:18", "Voice wake system loading"],
   ["10:42:21", "Particle core initialized"],
   ["10:42:24", "Wake call protocol loaded"],
   ["10:42:28", "No external AI API connected"],
-  ["10:42:32", "Awaiting user command"],
+  ["10:42:32", "Listening for Jarvis"],
 ];
 
 const quickActions = [
@@ -152,74 +153,18 @@ function DataWave({
 }
 
 function TextConsolePanel({
-  onJarvisSpeaking,
+  message,
+  setMessage,
+  messages,
+  isThinking,
+  onSubmit,
 }: {
-  onJarvisSpeaking: (speaking: boolean) => void;
+  message: string;
+  setMessage: (message: string) => void;
+  messages: ChatMessage[];
+  isThinking: boolean;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
-  const [message, setMessage] = useState("");
-  const [isThinking, setIsThinking] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      sender: "jarvis",
-      text: "Text console online. Supabase memory layer ready. Ask: Jarvis, are you up?",
-    },
-  ]);
-
-  function triggerSpeakingPulse() {
-    onJarvisSpeaking(true);
-
-    window.setTimeout(() => {
-      onJarvisSpeaking(false);
-    }, 1800);
-  }
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const cleanMessage = message.trim();
-
-    if (!cleanMessage || isThinking) {
-      return;
-    }
-
-    if (cleanMessage.toLowerCase() === "clear chat") {
-      setMessages([
-        {
-          sender: "jarvis",
-          text: "Chat cleared. Supabase memory remains stored. Local response engine standing by.",
-        },
-      ]);
-      setMessage("");
-      triggerSpeakingPulse();
-      return;
-    }
-
-    setIsThinking(true);
-
-    setMessages((current) => [
-      ...current,
-      {
-        sender: "user",
-        text: cleanMessage,
-      },
-    ]);
-
-    setMessage("");
-
-    const result = await getLocalJarvisResponse(cleanMessage);
-
-    setMessages((current) => [
-      ...current,
-      {
-        sender: "jarvis",
-        text: result.response,
-      },
-    ]);
-
-    setIsThinking(false);
-    triggerSpeakingPulse();
-  }
-
   return (
     <Panel title="TEXT CONSOLE" className="text-console-panel">
       <div className="text-console-shell">
@@ -265,7 +210,7 @@ function TextConsolePanel({
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} className="text-console-form">
+        <form onSubmit={onSubmit} className="text-console-form">
           <input
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -279,7 +224,7 @@ function TextConsolePanel({
 
         <div className="text-console-footer">
           <span>WAKE CALL READY</span>
-          <span>SUPABASE MEMORY ACTIVE</span>
+          <span>VOICE WAKE ACTIVE</span>
         </div>
       </div>
     </Panel>
@@ -299,7 +244,7 @@ function RightOverviewColumn() {
 
         <div className="diagnostic-bars">
           <BarRow label="COMMAND ROUTER" value="READY" width="78%" />
-          <BarRow label="VOICE SYSTEM" value="PENDING" width="42%" />
+          <BarRow label="VOICE WAKE" value="ACTIVE" width="82%" />
           <BarRow label="SUPABASE MEMORY" value="ACTIVE" width="82%" />
           <BarRow label="SYSTEM HEALTH" value="OPTIMAL" width="91%" />
         </div>
@@ -347,22 +292,36 @@ function RightOverviewColumn() {
 }
 
 function RightTextColumn({
+  message,
+  setMessage,
+  messages,
+  isThinking,
+  onSubmit,
+  onVoiceCommand,
   onJarvisSpeaking,
 }: {
+  message: string;
+  setMessage: (message: string) => void;
+  messages: ChatMessage[];
+  isThinking: boolean;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onVoiceCommand: (command: string) => Promise<string>;
   onJarvisSpeaking: (speaking: boolean) => void;
 }) {
   return (
     <div className="right-column text-column-open">
-      <TextConsolePanel onJarvisSpeaking={onJarvisSpeaking} />
+      <TextConsolePanel
+        message={message}
+        setMessage={setMessage}
+        messages={messages}
+        isThinking={isThinking}
+        onSubmit={onSubmit}
+      />
 
-      <Panel title="TEXT SYSTEM STATUS">
-        <div className="diagnostic-bars">
-          <BarRow label="WAKE CALL" value="READY" width="96%" />
-          <BarRow label="LOCAL ROUTER" value="READY" width="88%" />
-          <BarRow label="SUPABASE MEMORY" value="ACTIVE" width="82%" />
-          <BarRow label="AI API" value="OFF" width="12%" />
-        </div>
-      </Panel>
+      <JarvisVoiceControl
+        onVoiceCommand={onVoiceCommand}
+        onSpeakingChange={onJarvisSpeaking}
+      />
     </div>
   );
 }
@@ -370,8 +329,85 @@ function RightTextColumn({
 export default function JarvisDashboard() {
   const [activeTab, setActiveTab] = useState("OVERVIEW");
   const [jarvisSpeaking, setJarvisSpeaking] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      sender: "jarvis",
+      text: "Text console online. Supabase memory layer ready. Say or type: Jarvis, are you up?",
+    },
+  ]);
 
   const isTextMode = activeTab === "TEXT";
+
+  function triggerSpeakingPulse() {
+    setJarvisSpeaking(true);
+
+    window.setTimeout(() => {
+      setJarvisSpeaking(false);
+    }, 1800);
+  }
+
+  async function runJarvisCommand(cleanMessage: string) {
+    if (!cleanMessage || isThinking) {
+      return "";
+    }
+
+    if (cleanMessage.toLowerCase() === "clear chat") {
+      const response =
+        "Chat cleared. Supabase memory remains stored. Local response engine standing by.";
+
+      setMessages([
+        {
+          sender: "jarvis",
+          text: response,
+        },
+      ]);
+
+      triggerSpeakingPulse();
+
+      return response;
+    }
+
+    setIsThinking(true);
+
+    setMessages((current) => [
+      ...current,
+      {
+        sender: "user",
+        text: cleanMessage,
+      },
+    ]);
+
+    const result = await getLocalJarvisResponse(cleanMessage);
+
+    setMessages((current) => [
+      ...current,
+      {
+        sender: "jarvis",
+        text: result.response,
+      },
+    ]);
+
+    setIsThinking(false);
+    triggerSpeakingPulse();
+
+    return result.response;
+  }
+
+  async function handleTextSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const cleanMessage = message.trim();
+
+    if (!cleanMessage) {
+      return;
+    }
+
+    setMessage("");
+
+    await runJarvisCommand(cleanMessage);
+  }
 
   return (
     <main className="jarvis-dashboard">
@@ -476,8 +512,8 @@ export default function JarvisDashboard() {
                   <strong>READY</strong>
                 </div>
                 <div>
-                  <span>WAKE</span>
-                  <strong>READY</strong>
+                  <span>VOICE</span>
+                  <strong>WAKE</strong>
                 </div>
                 <div>
                   <span>AI API</span>
@@ -506,7 +542,7 @@ export default function JarvisDashboard() {
                       WAKE CALL <strong>READY</strong>
                     </p>
                     <p>
-                      TEXT ENGINE <strong>READY</strong>
+                      VOICE WAKE <strong>ACTIVE</strong>
                     </p>
                     <p>
                       SHORT MEMORY <strong>READY</strong>
@@ -526,7 +562,7 @@ export default function JarvisDashboard() {
                       SUPABASE <strong>ACTIVE</strong>
                     </p>
                     <p>
-                      API COST <strong>$0</strong>
+                      AI COST <strong>$0</strong>
                     </p>
                   </div>
                 </div>
@@ -547,9 +583,9 @@ export default function JarvisDashboard() {
                   {[
                     ["SYSTEM INIT", "00:00:00"],
                     [isTextMode ? "TEXT MODE" : "LOCAL MODE", "00:00:02"],
-                    ["WAKE READY", "00:00:05"],
+                    ["VOICE READY", "00:00:05"],
                     ["MEMORY READY", "00:00:07"],
-                    ["AWAIT COMMAND", "00:00:10"],
+                    ["AWAIT JARVIS", "00:00:10"],
                   ].map(([name, time]) => (
                     <div key={name}>
                       <i />
@@ -560,7 +596,7 @@ export default function JarvisDashboard() {
                 </div>
               </Panel>
 
-              <Panel title={isTextMode ? "TEXT ACTIVITY" : "COMMAND ACTIVITY"}>
+              <Panel title={isTextMode ? "VOICE ACTIVITY" : "COMMAND ACTIVITY"}>
                 <div className="analytics-bars">
                   {Array.from({ length: 56 }).map((_, index) => (
                     <i
@@ -574,16 +610,24 @@ export default function JarvisDashboard() {
               </Panel>
 
               <Panel title="LOCAL STATUS">
-                <div className="big-stat">{isTextMode ? "TEXT" : "READY"}</div>
+                <div className="big-stat">{isTextMode ? "VOICE" : "READY"}</div>
                 <div className="stat-line">
-                  <i style={{ width: isTextMode ? "88%" : "74%" }} />
+                  <i style={{ width: isTextMode ? "91%" : "74%" }} />
                 </div>
               </Panel>
             </div>
           </div>
 
           {isTextMode ? (
-            <RightTextColumn onJarvisSpeaking={setJarvisSpeaking} />
+            <RightTextColumn
+              message={message}
+              setMessage={setMessage}
+              messages={messages}
+              isThinking={isThinking}
+              onSubmit={handleTextSubmit}
+              onVoiceCommand={runJarvisCommand}
+              onJarvisSpeaking={setJarvisSpeaking}
+            />
           ) : (
             <RightOverviewColumn />
           )}
@@ -594,7 +638,7 @@ export default function JarvisDashboard() {
             USER: <strong>ADMIN</strong>
           </span>
           <span>
-            MODE: <strong>{isTextMode ? "TEXT" : "LOCAL"}</strong>
+            MODE: <strong>{isTextMode ? "VOICE/TEXT" : "LOCAL"}</strong>
           </span>
           <span>
             MEMORY <strong>SUPABASE</strong>
@@ -603,7 +647,7 @@ export default function JarvisDashboard() {
             AI COST <strong>$0</strong>
           </span>
           <span>
-            COMMANDS <strong>READY</strong>
+            WAKE WORD <strong>JARVIS</strong>
           </span>
           <span>
             TEXT <strong>{isTextMode ? "OPEN" : "STANDBY"}</strong>
