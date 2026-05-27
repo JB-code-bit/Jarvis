@@ -28,16 +28,21 @@ function createParticleData(count: number): ParticleData {
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
 
-    // Pushes more particles toward the outside shell, like your reference.
-    const shellBias = Math.pow(Math.random(), 0.28);
-    const r = THREE.MathUtils.lerp(0.25, 1.85, shellBias);
+    /*
+      Compact particle orb:
+      - Most particles stay inside a tight sphere.
+      - Outer shell is denser than the center.
+      - This avoids the huge star-field look.
+    */
+    const shellBias = Math.pow(Math.random(), 0.42);
+    const r = THREE.MathUtils.lerp(0.12, 1.15, shellBias);
 
     base[i3] = r * Math.sin(phi) * Math.cos(theta);
     base[i3 + 1] = r * Math.cos(phi);
     base[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
 
     phase[i] = Math.random() * Math.PI * 2;
-    speed[i] = THREE.MathUtils.lerp(0.45, 2.2, Math.random());
+    speed[i] = THREE.MathUtils.lerp(0.38, 1.65, Math.random());
     radius[i] = r;
   }
 
@@ -52,7 +57,13 @@ function createOuterParticles(count: number) {
 
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    const r = THREE.MathUtils.lerp(1.9, 3.35, Math.random());
+
+    /*
+      A few escaped particles only.
+      These should feel like energy leaking from the orb,
+      not a full-screen galaxy.
+    */
+    const r = THREE.MathUtils.lerp(1.25, 1.9, Math.random());
 
     positions[i3] = r * Math.sin(phi) * Math.cos(theta);
     positions[i3 + 1] = r * Math.cos(phi);
@@ -69,7 +80,7 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
   const centerGlowRef = useRef<THREE.Mesh>(null);
   const ringsRef = useRef<THREE.Group>(null);
 
-  const particleData = useMemo(() => createParticleData(6200), []);
+  const particleData = useMemo(() => createParticleData(6800), []);
 
   const particleGeometry = useMemo(() => {
     const geometry = new THREE.BufferGeometry();
@@ -87,7 +98,7 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
 
     geometry.setAttribute(
       "position",
-      new THREE.BufferAttribute(createOuterParticles(1200), 3)
+      new THREE.BufferAttribute(createOuterParticles(420), 3)
     );
 
     return geometry;
@@ -97,15 +108,19 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
     const time = state.clock.elapsedTime;
     const positions = particleGeometry.attributes.position.array as Float32Array;
 
+    /*
+      Speaking energy is still fake for now.
+      Later this gets replaced with real audio amplitude.
+    */
     const voiceEnergy = isSpeaking
-      ? 0.2 +
-        Math.abs(Math.sin(time * 9.5)) * 0.22 +
-        Math.abs(Math.sin(time * 17.5)) * 0.1
-      : 0.04;
+      ? 0.08 +
+        Math.abs(Math.sin(time * 9.5)) * 0.075 +
+        Math.abs(Math.sin(time * 18.5)) * 0.04
+      : 0.018;
 
     const breathing = isSpeaking
-      ? 1 + Math.sin(time * 10) * 0.065 + Math.sin(time * 21) * 0.032
-      : 1 + Math.sin(time * 1.35) * 0.028;
+      ? 1 + Math.sin(time * 8.5) * 0.025 + Math.sin(time * 19) * 0.018
+      : 1 + Math.sin(time * 1.25) * 0.018;
 
     for (let i = 0; i < particleData.count; i += 1) {
       const i3 = i * 3;
@@ -114,23 +129,23 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
       const by = particleData.base[i3 + 1];
       const bz = particleData.base[i3 + 2];
 
-      const phase = particleData.phase[i];
-      const speed = particleData.speed[i];
-      const r = particleData.radius[i];
+      const particlePhase = particleData.phase[i];
+      const particleSpeed = particleData.speed[i];
+      const particleRadius = particleData.radius[i];
 
-      const organic =
-        Math.sin(time * speed + phase) * 0.05 +
-        Math.cos(time * 0.55 + phase * 1.7) * 0.035;
+      const organicDrift =
+        Math.sin(time * particleSpeed + particlePhase) * 0.022 +
+        Math.cos(time * 0.55 + particlePhase * 1.7) * 0.018;
 
       const speechRipple = isSpeaking
-        ? Math.sin(time * 13 + r * 5.5 + phase) * voiceEnergy
+        ? Math.sin(time * 12 + particleRadius * 6 + particlePhase) * voiceEnergy
         : 0;
 
-      const pulse = breathing + organic + speechRipple;
+      const pulse = breathing + organicDrift + speechRipple;
 
-      const swirlX = Math.sin(time * 0.9 + phase) * 0.048;
-      const swirlY = Math.cos(time * 0.7 + phase * 1.2) * 0.048;
-      const swirlZ = Math.sin(time * 0.6 + phase * 1.8) * 0.048;
+      const swirlX = Math.sin(time * 0.72 + particlePhase) * 0.018;
+      const swirlY = Math.cos(time * 0.64 + particlePhase * 1.2) * 0.018;
+      const swirlZ = Math.sin(time * 0.58 + particlePhase * 1.8) * 0.018;
 
       positions[i3] = bx * pulse + swirlX;
       positions[i3 + 1] = by * pulse + swirlY;
@@ -140,35 +155,35 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
     particleGeometry.attributes.position.needsUpdate = true;
 
     if (pointsRef.current) {
-      pointsRef.current.rotation.y = time * 0.09;
-      pointsRef.current.rotation.x = Math.sin(time * 0.28) * 0.12;
-      pointsRef.current.rotation.z = Math.cos(time * 0.22) * 0.05;
-      pointsRef.current.scale.setScalar(isSpeaking ? 1.05 : 1);
+      pointsRef.current.rotation.y = time * 0.12;
+      pointsRef.current.rotation.x = Math.sin(time * 0.28) * 0.08;
+      pointsRef.current.rotation.z = Math.cos(time * 0.22) * 0.035;
+      pointsRef.current.scale.setScalar(isSpeaking ? 1.035 : 1);
     }
 
     if (outerPointsRef.current) {
-      outerPointsRef.current.rotation.y = time * -0.035;
-      outerPointsRef.current.rotation.x = Math.sin(time * 0.2) * 0.08;
+      outerPointsRef.current.rotation.y = time * -0.045;
+      outerPointsRef.current.rotation.x = Math.sin(time * 0.2) * 0.055;
     }
 
     if (ringsRef.current) {
-      ringsRef.current.rotation.y = time * (isSpeaking ? 0.42 : 0.18);
-      ringsRef.current.rotation.x = Math.sin(time * 0.28) * 0.18;
-      ringsRef.current.rotation.z = time * (isSpeaking ? -0.13 : -0.055);
+      ringsRef.current.rotation.y = time * (isSpeaking ? 0.34 : 0.14);
+      ringsRef.current.rotation.x = Math.sin(time * 0.28) * 0.12;
+      ringsRef.current.rotation.z = time * (isSpeaking ? -0.1 : -0.045);
     }
 
     if (glowRef.current) {
       const scale = isSpeaking
-        ? 1.04 + Math.abs(Math.sin(time * 11)) * 0.1
-        : 1 + Math.sin(time * 1.8) * 0.035;
+        ? 1.02 + Math.abs(Math.sin(time * 9)) * 0.035
+        : 1 + Math.sin(time * 1.8) * 0.018;
 
       glowRef.current.scale.setScalar(scale);
     }
 
     if (centerGlowRef.current) {
       const scale = isSpeaking
-        ? 1 + Math.abs(Math.sin(time * 18)) * 0.18
-        : 1 + Math.sin(time * 2.1) * 0.05;
+        ? 1 + Math.abs(Math.sin(time * 16)) * 0.08
+        : 1 + Math.sin(time * 2.1) * 0.035;
 
       centerGlowRef.current.scale.setScalar(scale);
     }
@@ -176,82 +191,98 @@ function ParticleCoreScene({ isSpeaking }: { isSpeaking: boolean }) {
 
   return (
     <group>
+      {/* Tight reactor rings around the orb */}
       <group ref={ringsRef}>
-        <mesh rotation={[Math.PI / 2.65, 0, 0]}>
-          <torusGeometry args={[2.35, 0.008, 20, 260]} />
+        <mesh rotation={[Math.PI / 2.55, 0, 0]}>
+          <torusGeometry args={[1.58, 0.006, 20, 260]} />
           <meshBasicMaterial
             color="#00d9ff"
             transparent
-            opacity={0.5}
+            opacity={0.58}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
           />
         </mesh>
 
-        <mesh rotation={[Math.PI / 2.35, 0.45, 0.16]}>
-          <torusGeometry args={[2.05, 0.006, 20, 260]} />
+        <mesh rotation={[Math.PI / 2.25, 0.45, 0.16]}>
+          <torusGeometry args={[1.38, 0.005, 20, 260]} />
           <meshBasicMaterial
             color="#8ff4ff"
             transparent
-            opacity={0.32}
+            opacity={0.34}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
           />
         </mesh>
 
-        <mesh rotation={[Math.PI / 2.08, -0.45, -0.2]}>
-          <torusGeometry args={[1.74, 0.006, 20, 260]} />
+        <mesh rotation={[Math.PI / 2.05, -0.45, -0.2]}>
+          <torusGeometry args={[1.72, 0.005, 20, 260]} />
           <meshBasicMaterial
             color="#0b78ff"
             transparent
-            opacity={0.44}
+            opacity={0.38}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+
+        <mesh rotation={[Math.PI / 1.95, 0.25, -0.1]}>
+          <torusGeometry args={[1.18, 0.004, 18, 220]} />
+          <meshBasicMaterial
+            color="#bff6ff"
+            transparent
+            opacity={0.22}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
           />
         </mesh>
       </group>
 
+      {/* Very soft volumetric haze, not a giant flat blue disk */}
       <mesh ref={glowRef}>
-        <sphereGeometry args={[2.05, 64, 64]} />
+        <sphereGeometry args={[1.28, 64, 64]} />
         <meshBasicMaterial
           color="#009dff"
           transparent
-          opacity={0.12}
+          opacity={0.045}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
       </mesh>
 
+      {/* Small energy center, not a white ball */}
       <mesh ref={centerGlowRef}>
-        <sphereGeometry args={[0.22, 48, 48]} />
+        <sphereGeometry args={[0.075, 32, 32]} />
         <meshBasicMaterial
           color="#dff8ff"
           transparent
-          opacity={0.32}
+          opacity={0.26}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
       </mesh>
 
+      {/* Main compact particle consciousness orb */}
       <points ref={pointsRef} geometry={particleGeometry}>
         <pointsMaterial
           color="#00d9ff"
-          size={0.021}
+          size={0.018}
           sizeAttenuation
           transparent
-          opacity={1}
+          opacity={0.96}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
       </points>
 
+      {/* Small amount of escaped energy particles */}
       <points ref={outerPointsRef} geometry={outerGeometry}>
         <pointsMaterial
           color="#bff6ff"
-          size={0.013}
+          size={0.01}
           sizeAttenuation
           transparent
-          opacity={0.5}
+          opacity={0.38}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -270,7 +301,7 @@ export default function LiveJarvisCore({
     <div className={`jarvis-particle-core ${speaking ? "speaking" : ""}`}>
       <div className="jarvis-core-canvas">
         <Canvas
-          camera={{ position: [0, 0, 5.4], fov: 48 }}
+          camera={{ position: [0, 0, 4.7], fov: 45 }}
           gl={{
             alpha: true,
             antialias: true,
