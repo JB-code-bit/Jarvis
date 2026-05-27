@@ -1359,7 +1359,7 @@ input {
 ========================================================= */
 
 .text-column-open {
-  grid-template-rows: 1fr 220px;
+  grid-template-rows: minmax(430px, 1fr) 260px;
 }
 
 .text-console-panel {
@@ -1370,8 +1370,8 @@ input {
   height: 100%;
   min-height: 570px;
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
-  gap: 14px;
+  grid-template-rows: auto 1fr auto auto auto;
+  gap: 12px;
 }
 
 .text-console-header {
@@ -1458,6 +1458,30 @@ input {
   color: var(--jarvis-green);
 }
 
+.text-console-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.text-console-examples button {
+  border: 1px solid rgba(0, 217, 255, 0.18);
+  background: rgba(0, 40, 80, 0.24);
+  color: rgba(223, 248, 255, 0.62);
+  padding: 6px 8px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.text-console-examples button:hover {
+  color: #eaffff;
+  border-color: rgba(0, 217, 255, 0.55);
+  box-shadow: 0 0 14px rgba(0, 217, 255, 0.16);
+}
+
 .text-console-form {
   display: grid;
   grid-template-columns: 1fr 92px;
@@ -1503,6 +1527,11 @@ input {
     inset 0 0 22px rgba(0, 217, 255, 0.12);
 }
 
+.text-console-form button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 .text-console-footer {
   display: flex;
   justify-content: space-between;
@@ -1511,6 +1540,143 @@ input {
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.16em;
+}
+
+/* =========================================================
+   JARVIS VOICE WAKE SYSTEM
+========================================================= */
+
+.jarvis-voice-panel {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  background:
+    linear-gradient(135deg, rgba(0, 217, 255, 0.1), transparent 42%),
+    radial-gradient(circle at 50% 0%, rgba(0, 217, 255, 0.12), transparent 55%),
+    rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 0 0 24px rgba(0, 217, 255, 0.07),
+    0 0 18px rgba(0, 217, 255, 0.08);
+  clip-path: polygon(
+    0 10px,
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+.jarvis-voice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.jarvis-voice-header p {
+  margin: 0;
+  color: #eaffff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.jarvis-voice-header span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(223, 248, 255, 0.45);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.jarvis-voice-header strong {
+  color: rgba(223, 248, 255, 0.6);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.jarvis-voice-header strong.active {
+  color: var(--jarvis-green);
+  text-shadow: 0 0 14px rgba(77, 255, 186, 0.55);
+}
+
+.jarvis-voice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.jarvis-voice-grid div {
+  border: 1px solid rgba(0, 217, 255, 0.16);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px;
+}
+
+.jarvis-voice-grid span {
+  display: block;
+  color: rgba(223, 248, 255, 0.45);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.jarvis-voice-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--jarvis-cyan);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.jarvis-voice-readout {
+  display: grid;
+  gap: 6px;
+}
+
+.jarvis-voice-readout p {
+  margin: 0;
+  color: rgba(223, 248, 255, 0.68);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.jarvis-voice-readout span {
+  display: inline-block;
+  min-width: 72px;
+  color: var(--jarvis-cyan);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.jarvis-voice-actions {
+  display: grid;
+  grid-template-columns: 1fr 70px;
+  gap: 8px;
+}
+
+.jarvis-voice-actions button {
+  min-height: 32px;
+  border: 1px solid rgba(0, 217, 255, 0.32);
+  background: rgba(0, 40, 80, 0.24);
+  color: rgba(223, 248, 255, 0.72);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.jarvis-voice-actions button:hover {
+  color: #eaffff;
+  border-color: rgba(0, 217, 255, 0.75);
+  box-shadow: 0 0 14px rgba(0, 217, 255, 0.16);
 }
 
 /* =========================================================
@@ -1575,7 +1741,7 @@ input {
   }
 
   .text-column-open {
-    grid-template-rows: 1fr 190px;
+    grid-template-rows: minmax(390px, 1fr) 250px;
   }
 
   .text-console-shell {
