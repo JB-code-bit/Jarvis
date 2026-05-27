@@ -903,7 +903,7 @@ input {
 }
 
 /* =========================================================
-   CENTER CORE / THREE.JS CORE AREA
+   CENTER CORE / THREE.JS PARTICLE CORE
 ========================================================= */
 
 .core-panel {
@@ -923,10 +923,10 @@ input {
 
 .jarvis-particle-core {
   position: relative;
-  width: min(76vh, 680px);
-  height: min(76vh, 680px);
-  min-width: 540px;
-  min-height: 540px;
+  width: min(68vh, 590px);
+  height: min(68vh, 590px);
+  min-width: 500px;
+  min-height: 500px;
   isolation: isolate;
 }
 
@@ -934,7 +934,7 @@ input {
   position: absolute;
   inset: 0;
   z-index: 1;
-  filter: drop-shadow(0 0 26px rgba(0, 217, 255, 0.45));
+  filter: drop-shadow(0 0 22px rgba(0, 217, 255, 0.42));
 }
 
 .jarvis-core-canvas canvas {
@@ -952,39 +952,39 @@ input {
 .jarvis-core-pointer {
   position: absolute;
   color: #eaffff;
-  font-size: 34px;
+  font-size: 28px;
   text-shadow:
     0 0 12px rgba(255, 255, 255, 0.85),
     0 0 24px rgba(0, 217, 255, 1);
 }
 
 .jarvis-core-pointer.pointer-top {
-  top: 62px;
+  top: 70px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .jarvis-core-pointer.pointer-left {
-  top: 50%;
-  left: 26px;
+  top: 48%;
+  left: 52px;
   transform: translateY(-50%);
 }
 
 .jarvis-core-pointer.pointer-right {
-  top: 50%;
-  right: 26px;
+  top: 48%;
+  right: 52px;
   transform: translateY(-50%);
 }
 
 .jarvis-core-status {
   position: absolute;
   left: 50%;
-  bottom: 12px;
-  width: 380px;
+  bottom: 0;
+  width: 360px;
   transform: translateX(-50%);
-  padding: 14px 18px;
+  padding: 13px 16px;
   border: 1px solid rgba(0, 217, 255, 0.75);
-  background: rgba(3, 15, 31, 0.88);
+  background: rgba(3, 15, 31, 0.9);
   box-shadow:
     0 0 28px rgba(0, 217, 255, 0.32),
     inset 0 0 24px rgba(0, 217, 255, 0.08);
@@ -992,8 +992,8 @@ input {
 
 .jarvis-core-status.active {
   box-shadow:
-    0 0 46px rgba(0, 217, 255, 0.6),
-    inset 0 0 34px rgba(0, 217, 255, 0.16);
+    0 0 42px rgba(0, 217, 255, 0.52),
+    inset 0 0 30px rgba(0, 217, 255, 0.14);
 }
 
 .jarvis-core-status .status-card-header,
@@ -1058,7 +1058,7 @@ input {
 .jarvis-core-talk-button {
   position: absolute;
   left: 50%;
-  bottom: -44px;
+  bottom: -38px;
   transform: translateX(-50%);
   border: 1px solid rgba(0, 217, 255, 0.35);
   background: rgba(0, 40, 80, 0.55);
@@ -1401,10 +1401,10 @@ input {
   }
 
   .jarvis-particle-core {
-    width: 540px;
-    height: 540px;
-    min-width: 500px;
-    min-height: 500px;
+    width: 520px;
+    height: 520px;
+    min-width: 480px;
+    min-height: 480px;
   }
 
   .left-column {
@@ -1427,6 +1427,10 @@ input {
   .earth-globe {
     width: 78px;
     height: 78px;
+  }
+
+  .jarvis-core-status {
+    width: 340px;
   }
 }
 
